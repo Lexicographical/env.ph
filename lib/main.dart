@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'home.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'constants.dart';
+import 'startup.dart';
+import 'home.dart';
+import 'package:env_ph/data/air.dart';
+import 'package:env_ph/data/water.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,10 +17,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'env.ph',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          hintColor: btnColor
-        ),
-        home: HomePage(title: 'env.ph'));
+        theme: ThemeData(primarySwatch: Colors.blue, hintColor: colorBtn),
+        initialRoute: "/",
+        routes: {
+          "/home": (context) => HomePage(),
+          "/air": (context) => AirPage(),
+          "/water": (context) => WaterPage(),
+        },
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: [
+          const Locale('en'),
+          const Locale('tl'),
+        ],
+        home: StartupPage());
   }
 }
