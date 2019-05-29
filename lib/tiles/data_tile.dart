@@ -31,7 +31,14 @@ class DataTileState extends State<DataTile> {
           callback(false, idx);
         },
         child: Container(
-            color: colorCardBg,
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(
+                  color: colorFloatShadow,
+                  offset: Offset(0, 0),
+                  blurRadius: 5,
+                  spreadRadius: 5)
+            ], color: colorCardBg),
+            margin: EdgeInsets.all(10),
             padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -45,7 +52,7 @@ class DataTileState extends State<DataTile> {
                 Text(
                   "0.7 ppm",
                   style: styleDataTileValue,
-                  textAlign: TextAlign.left,
+                  textAlign: TextAlign.center,
                 ),
                 Padding(padding: EdgeInsets.all(5)),
                 LinearProgressIndicator(
@@ -61,7 +68,11 @@ class DataTileState extends State<DataTile> {
                   ],
                 ),
                 Padding(padding: EdgeInsets.all(5)),
-                Text("SAFE LEVEL", style: styleSafeLabel)
+                Text(
+                  "SAFE LEVEL",
+                  style: styleSafeLabel,
+                  textAlign: TextAlign.center,
+                )
               ],
             )));
   }

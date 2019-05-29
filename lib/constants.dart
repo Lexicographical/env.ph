@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 final List<String> langs = ["EN", "TG"];
 int lang_idx = 0;
 final List<String> dataTypes = [
-  "Benzene",
-  "Formaline",
-  "Methane",
   "PM 1.0",
   "PM 2.5",
-  "PM 10"
+  "PM 10",
+  "CO2"
 ];
 bool general = true;
 int dataType = 0;

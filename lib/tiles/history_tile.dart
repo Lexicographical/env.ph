@@ -27,38 +27,49 @@ class HistoryTileState extends State<HistoryTile> {
   @override
   Widget build(BuildContext context) {
     return Container(
-            color: colorCardBg,
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        decoration: BoxDecoration(boxShadow: [
+          BoxShadow(
+              color: colorFloatShadow,
+              offset: Offset(0, 0),
+              blurRadius: 5,
+              spreadRadius: 5)
+        ], color: colorCardBg),
+        margin: EdgeInsets.all(10),
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              val.toStringAsFixed(2) + " ppm",
+              style: dataTileLabelStyle,
+              textAlign: TextAlign.center,
+            ),
+            Padding(padding: EdgeInsets.all(5)),
+            Text(
+              "SAFE LEVEL",
+              style: styleDataTileValue,
+              textAlign: TextAlign.center,
+            ),
+            Padding(padding: EdgeInsets.all(5)),
+            LinearProgressIndicator(
+              value: 0.7 / 20,
+              backgroundColor: colorUnprogress,
+              valueColor: AlwaysStoppedAnimation<Color>(colorProgress),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
-                  val.toStringAsFixed(2) + " ppm",
-                  style: dataTileLabelStyle,
-                  textAlign: TextAlign.left,
-                ),
-                Padding(padding: EdgeInsets.all(5)),
-                Text(
-                  "SAFE LEVEL",
-                  style: styleDataTileValue,
-                  textAlign: TextAlign.center,
-                ),
-                Padding(padding: EdgeInsets.all(5)),
-                LinearProgressIndicator(
-                  value: 0.7 / 20,
-                  backgroundColor: colorUnprogress,
-                  valueColor: AlwaysStoppedAnimation<Color>(colorProgress),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text("0 ppm", style: styleLinearProgressLabel),
-                    Text("20 ppm", style: styleLinearProgressLabel)
-                  ],
-                ),
-                Padding(padding: EdgeInsets.all(5)),
-                Text(DateFormat.yMMMd().format(dt), style: styleSafeLabel)
+                Text("0 ppm", style: styleLinearProgressLabel),
+                Text("20 ppm", style: styleLinearProgressLabel)
               ],
-            ));
+            ),
+            Padding(padding: EdgeInsets.all(5)),
+            Text(
+              DateFormat.yMMMd().format(dt),
+              style: styleSafeLabel,
+              textAlign: TextAlign.center,
+            )
+          ],
+        ));
   }
 }

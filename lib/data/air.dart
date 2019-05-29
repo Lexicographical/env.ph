@@ -18,15 +18,11 @@ class AirPageState extends State<AirPage> {
       DataTile(1, updateLayout),
       DataTile(2, updateLayout),
       DataTile(3, updateLayout),
-      DataTile(4, updateLayout),
-      DataTile(5, updateLayout),
     ];
   }
 
   List<Widget> generateHistoryTiles() {
     return [
-      HistoryTile(2.78, DateTime.parse("2019-05-01")),
-      HistoryTile(2.80, DateTime.parse("2019-05-02")),
       HistoryTile(2.70, DateTime.parse("2019-05-03")),
       HistoryTile(2.73, DateTime.parse("2019-05-04")),
       HistoryTile(2.60, DateTime.parse("2019-05-05")),
@@ -128,15 +124,15 @@ class AirPageState extends State<AirPage> {
               ],
             )),
         Container(
-          margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
+          margin: EdgeInsets.fromLTRB(10, 300, 10, 0),
           child: Column(
             children: <Widget>[
               Expanded(
                   child: GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                childAspectRatio: 2 / 3,
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 9/10,
                 children:
                     general ? generateDateTiles() : generateHistoryTiles(),
               ))
