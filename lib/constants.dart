@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
 final List<String> langs = ["EN", "TG"];
 int lang_idx = 0;
@@ -10,6 +11,8 @@ final List<String> dataTypes = [
 ];
 bool general = true;
 int dataType = 0;
+
+Future<Database> database;
 
 final Color colorText = Color(0xff06CBC0);
 final Color colorBtn = Color(0xff05DCB6);

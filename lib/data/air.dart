@@ -76,7 +76,8 @@ class AirPageState extends State<AirPage> {
               icon: Icon(Icons.keyboard_arrow_left, color: colorBtn),
               iconSize: 50,
               onPressed: () {
-                Navigator.of(context).pushReplacement(SlideLeftRoute(widget: HomePage()));
+                Navigator.of(context)
+                    .pushReplacement(SlideLeftRoute(widget: HomePage()));
               },
             )),
         Positioned(
@@ -132,7 +133,7 @@ class AirPageState extends State<AirPage> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 9/10,
+                childAspectRatio: 9 / 10,
                 children:
                     general ? generateDateTiles() : generateHistoryTiles(),
               ))
