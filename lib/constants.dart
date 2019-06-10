@@ -1,18 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
+
+final String url = "http://thingspeak.com/channels/772942/feed.json";
 final List<String> langs = ["EN", "TG"];
 int lang_idx = 0;
+
+
 final List<String> dataTypes = [
+  "Temperature",
+  "Humidity",
+  "Gas Sensor",
+  "CO Gas",
   "PM 1.0",
   "PM 2.5",
-  "PM 10",
-  "CO2"
+  "PM 10"
 ];
+
+final List<String> symbols = [
+  "ºC",
+  "%",
+   "ppm",
+  "ppm",
+  "μm / m3",
+  "μm / m3",
+  "μm / m3"
+];
+
+final List<List<String>> minMax = [
+  ["15","50"],
+  ["35", "75"],
+  ["0","300"],
+  ["0", "100"],
+  ["0", "75"],
+  ["0", "75"],
+  ["0", "75"]
+];
+
+final List<String> statusLabels = [
+  "SAFE",
+  "MODERATE",
+  "DANGEROUS"
+];
+
 bool general = true;
 int dataType = 0;
 
 Future<Database> database;
+
+final List<Color> statusColors = [
+  Color(0xff05DCB6),
+  Color(0xffFFE44F),
+  Color(0xffE25856),
+
+];
 
 final Color colorText = Color(0xff06CBC0);
 final Color colorBtn = Color(0xff05DCB6);
@@ -44,18 +85,18 @@ final TextStyle styleDataTypeText = TextStyle(
     fontWeight: FontWeight.w700,
     height: startupLineHeight);
 final TextStyle styleLocationText =
-    TextStyle(fontFamily: 'Avenir', fontSize: 18, height: startupLineHeight);
+    TextStyle(fontFamily: 'Avenir', fontSize: 16.5, height: startupLineHeight);
 final TextStyle dataTileLabelStyle = TextStyle(
     fontFamily: 'Avenir',
-    fontSize: 15,
+    fontSize: 20,
     height: startupLineHeight,
     fontWeight: FontWeight.w700);
 final TextStyle styleDataTileValue =
-    TextStyle(fontFamily: 'Avenir', fontSize: 13, height: startupLineHeight);
+    TextStyle(fontFamily: 'Avenir', fontSize: 22, height: startupLineHeight);
 final TextStyle styleLinearProgressLabel =
     TextStyle(fontFamily: 'Avenir', fontSize: 10, height: startupLineHeight);
 final TextStyle styleSafeLabel =
-    TextStyle(fontFamily: 'Avenir', fontSize: 13, height: startupLineHeight);
+    TextStyle(fontFamily: 'Avenir', fontSize: 15, height: startupLineHeight);
 
 final Padding dataTilePadding =
     Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0));
