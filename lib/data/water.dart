@@ -15,23 +15,13 @@ class WaterPageState extends State<WaterPage> {
 
   List<Widget> generateDateTiles() {
     return [
-      DataTile(0, updateLayout),
-      DataTile(1, updateLayout),
-      DataTile(2, updateLayout),
-      DataTile(3, updateLayout),
-      DataTile(4, updateLayout),
-      DataTile(5, updateLayout),
+
     ];
   }
 
   List<Widget> generateHistoryTiles() {
     return [
-      HistoryTile(2.78, DateTime.parse("2019-05-01")),
-      HistoryTile(2.80, DateTime.parse("2019-05-02")),
-      HistoryTile(2.70, DateTime.parse("2019-05-03")),
-      HistoryTile(2.73, DateTime.parse("2019-05-04")),
-      HistoryTile(2.60, DateTime.parse("2019-05-05")),
-      HistoryTile(3.01, DateTime.parse("2019-05-06")),
+
     ];
   }
 
@@ -112,7 +102,7 @@ class WaterPageState extends State<WaterPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text(general ? "AIR QUALITY" : dataTypes[dataType], style: styleDataTypeText)
+                        Text(general ? "WATER QUALITY" : dataTypes[dataType], style: styleDataTypeText)
                       ],
                     ),
                     Row(
