@@ -1,3 +1,21 @@
+/*
+ * env.ph - An Environmental Parameter Monitoring Tool
+ * Copyright (C) 2019 Philippine Innovation Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:env_ph/constants.dart';
@@ -9,9 +27,6 @@ import 'package:env_ph/data/air_tile.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
-
 List<AirTile> air_data_list;
 
 class AirPage extends StatefulWidget {
@@ -37,7 +52,6 @@ Future<List<AirTile>> getJsonData() async {
 
 
 }
-
 class AirPageState extends State<AirPage> {
   void initState() {
     super.initState();
