@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+data_tile.dart
+UI Component
+Data tile to organize and display the received data
+ */
 import 'package:flutter/material.dart';
 import 'package:env_ph/constants.dart';
 import 'package:env_ph/constants.dart';

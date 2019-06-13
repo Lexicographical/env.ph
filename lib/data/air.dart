@@ -15,10 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+air.dart
+UI builder
+Builds the page that displays the air data
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:env_ph/constants.dart';
+import 'package:env_ph/variables.dart';
 import 'package:env_ph/home.dart';
 import 'package:env_ph/tiles/data_tile.dart';
 import 'package:env_ph/tiles/history_tile.dart';

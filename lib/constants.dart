@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+/*
+constants.dart
+Stores immutable fields and constants for use in the project
+ */
 
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-
 
 final String url = "http://thingspeak.com/channels/772942/feed.json";
 final List<String> langs = ["EN", "TG"];
-int lang_idx = 0;
-
 
 final List<String> dataTypes = [
   "Temperature",
@@ -61,16 +61,10 @@ final List<String> statusLabels = [
   "DANGEROUS"
 ];
 
-bool general = true;
-int dataType = 0;
-
-Future<Database> database;
-
 final List<Color> statusColors = [
   Color(0xff05DCB6),
   Color(0xffFFE44F),
   Color(0xffE25856),
-
 ];
 
 final Color colorText = Color(0xff06CBC0);

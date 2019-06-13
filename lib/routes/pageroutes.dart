@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+pageroutes.dart
+Effects
+This script defines page route effects for transitioning between different pages.
+ */
 import 'package:flutter/material.dart';
 
 class SlideRightRoute extends PageRouteBuilder {

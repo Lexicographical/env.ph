@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+water.dart
+UI builder
+Builds the page that displays the water data
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:env_ph/home.dart';
@@ -23,6 +27,7 @@ import 'package:env_ph/tiles/data_tile.dart';
 import 'package:env_ph/tiles/history_tile.dart';
 import 'package:env_ph/routes/pageroutes.dart';
 import 'package:env_ph/constants.dart';
+import 'package:env_ph/variables.dart';
 
 class WaterPage extends StatefulWidget {
   @override

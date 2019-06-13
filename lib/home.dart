@@ -15,10 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+home.dart
+UI builder
+Builds the main menu that allows the user to navigate to either the
+air or water data views.
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'constants.dart';
+import 'variables.dart';
 import 'data/air.dart';
 import 'data/water.dart';
 import 'package:env_ph/routes/pageroutes.dart';
