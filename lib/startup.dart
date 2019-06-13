@@ -15,10 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+startup.dart
+UI builder
+Builds the startup page that is displayed the first time the user opens the app.
+ */
 import 'package:env_ph/home.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
+import 'variables.dart';
 import 'package:env_ph/routes/pageroutes.dart';
 
 bool acceptedTerms = false;

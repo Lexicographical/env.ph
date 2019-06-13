@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+history_tile.dart
+UI component
+Data tile tile to present historical data
+ */
 import 'package:flutter/material.dart';
 import 'package:env_ph/constants.dart';
 import 'package:intl/intl.dart';

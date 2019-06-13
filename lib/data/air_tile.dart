@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/*
+air_tile.dart
+Data model
+OOP model representing a single data entry for air data
+ */
 class AirTile {
 
   String createdAt;
