@@ -1,3 +1,3 @@
-# env_ph
+# env.ph
 
-A collaborative environmental monitoring mobile application
+This directory contains the resources and source code for the env.ph mobile application. The app is designed using Flutter to provide cross-platform support.
