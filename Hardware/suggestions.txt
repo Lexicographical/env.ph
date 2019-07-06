@@ -1,0 +1,1 @@
+[1] Arduino Uno could be replaced with a smaller and cheaper Arduino Nano
