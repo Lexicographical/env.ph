@@ -1,30 +1,8 @@
-/*
- * env.ph - An Environmental Parameter Monitoring Tool
- * Copyright (C) 2019 Philippine Innovation Network
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-/*
-startup.dart
-UI builder
-Builds the startup page that is displayed the first time the user opens the app.
- */
 import 'package:env_ph/home.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
-import 'variables.dart';
 import 'package:env_ph/routes/pageroutes.dart';
+import 'package:env_ph/data/air.dart';
 
 bool acceptedTerms = false;
 
@@ -55,6 +33,11 @@ class StartupPageState extends State<StartupPage>{
 
   @override
   Widget build(BuildContext context) {
+
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+
+
     return Scaffold(
         body: new Stack(
       fit: StackFit.expand,
@@ -80,7 +63,7 @@ class StartupPageState extends State<StartupPage>{
                         padding: EdgeInsets.all(20))))),
         pages[page_idx],
         Positioned(
-            left: 130,
+            left: (width - 100) / 2,
             width: 100,
             bottom: 20,
             child: Center(
@@ -231,6 +214,7 @@ class Page3State extends State<Page3> {
                   padding: EdgeInsets.all(20))),
           Row(
             children: <Widget>[
+              Padding(padding: EdgeInsets.fromLTRB(8, 0, 0, 0)),
               Checkbox(
                 value: acceptedTerms,
                 onChanged: (bool state) {
@@ -257,9 +241,8 @@ class Page3State extends State<Page3> {
                         color: colorText,
                         fontWeight: FontWeight.w500)),
                 onPressed: () {
-                  print("Go");
                   if (acceptedTerms) {
-                    Navigator.of(context).pushReplacement(FadeRoute(widget: HomePage()));
+                    Navigator.of(context).pushReplacement(FadeRoute(widget: AirControl()));
                   }
                 },
               ),
