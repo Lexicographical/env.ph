@@ -1,54 +1,36 @@
-/*
- * env.ph - An Environmental Parameter Monitoring Tool
- * Copyright (C) 2019 Philippine Innovation Network
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-/*
-constants.dart
-Stores immutable fields and constants for use in the project
- */
-
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
-final String url = "http://thingspeak.com/channels/772942/feed.json";
+
+final String url = "http://gramliu.com/env/index.php?action=query_data&src_id=810768&timestamp=2019-07-03-19";
 final List<String> langs = ["EN", "TG"];
+int lang_idx = 0;
+
 
 final List<String> dataTypes = [
   "Temperature",
   "Humidity",
-  "Gas Sensor",
   "CO Gas",
+  "CO₂ Gas",
   "PM 1.0",
   "PM 2.5",
-  "PM 10"
+  "PM 10",
 ];
 
 final List<String> symbols = [
   "ºC",
   "%",
-   "ppm",
   "ppm",
-  "μm / m3",
-  "μm / m3",
-  "μm / m3"
+  "ppm",
+  "μm / m³",
+  "μm / m³",
+  "μm / m³"
 ];
 
 final List<List<String>> minMax = [
-  ["15","50"],
-  ["35", "75"],
-  ["0","300"],
+  ["20","50"],
+  ["35", "85"],
+  ["0", "100"],
   ["0", "100"],
   ["0", "75"],
   ["0", "75"],
@@ -61,10 +43,16 @@ final List<String> statusLabels = [
   "DANGEROUS"
 ];
 
+bool general = true;
+int dataType = 0;
+
+Future<Database> database;
+
 final List<Color> statusColors = [
   Color(0xff05DCB6),
-  Color(0xffFFE44F),
+  Color(0xffFFC145),
   Color(0xffE25856),
+
 ];
 
 final Color colorText = Color(0xff06CBC0);
@@ -97,18 +85,13 @@ final TextStyle styleDataTypeText = TextStyle(
     fontWeight: FontWeight.w700,
     height: startupLineHeight);
 final TextStyle styleLocationText =
-    TextStyle(fontFamily: 'Avenir', fontSize: 16.5, height: startupLineHeight);
-final TextStyle dataTileLabelStyle = TextStyle(
-    fontFamily: 'Avenir',
-    fontSize: 20,
-    height: startupLineHeight,
-    fontWeight: FontWeight.w700);
-final TextStyle styleDataTileValue =
-    TextStyle(fontFamily: 'Avenir', fontSize: 22, height: startupLineHeight);
-final TextStyle styleLinearProgressLabel =
-    TextStyle(fontFamily: 'Avenir', fontSize: 10, height: startupLineHeight);
-final TextStyle styleSafeLabel =
     TextStyle(fontFamily: 'Avenir', fontSize: 15, height: startupLineHeight);
+final TextStyle styleDataTileValue =
+    TextStyle(fontFamily: 'Avenir', fontSize: 35, height: startupLineHeight);
+final TextStyle styleLinearProgressLabel =
+    TextStyle(fontFamily: 'Avenir', fontSize: 15, height: startupLineHeight);
+final TextStyle styleSafeLabel =
+    TextStyle(fontFamily: 'Avenir', fontSize: 18, height: startupLineHeight);
 
 final Padding dataTilePadding =
     Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0));

@@ -1,30 +1,6 @@
-/*
- * env.ph - An Environmental Parameter Monitoring Tool
- * Copyright (C) 2019 Philippine Innovation Network
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-/*
-home.dart
-UI builder
-Builds the main menu that allows the user to navigate to either the
-air or water data views.
- */
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'constants.dart';
-import 'variables.dart';
 import 'data/air.dart';
 import 'data/water.dart';
 import 'package:env_ph/routes/pageroutes.dart';
@@ -73,7 +49,7 @@ class HomePageState extends State<HomePage> {
           children: <Widget>[
             IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(SlideRightRoute(widget: AirPage()));
+                  Navigator.of(context).push(SlideRightRoute(widget: AirControl()));
                 },
                 iconSize: 150,
                 icon: Image(

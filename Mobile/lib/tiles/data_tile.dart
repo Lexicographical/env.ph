@@ -1,52 +1,25 @@
-/*
- * env.ph - An Environmental Parameter Monitoring Tool
- * Copyright (C) 2019 Philippine Innovation Network
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-/*
-data_tile.dart
-UI Component
-Data tile to organize and display the received data
- */
 import 'package:flutter/material.dart';
-import 'package:env_ph/constants.dart';
 import 'package:env_ph/constants.dart';
 
 class DataTile extends StatefulWidget {
   int idx = 0;
-  var callback;
   String val;
 
-  DataTile(int idx, var callback, String val) {
+  DataTile(int idx, String val) {
     this.idx = idx;
-    this.callback = callback;
     this.val = val;
   }
 
   @override
-  DataTileState createState() => DataTileState(idx, callback, val);
+  DataTileState createState() => DataTileState(idx, val);
 }
 
 class DataTileState extends State<DataTile> {
   int idx = 0;
-  var callback;
   String val;
 
-  DataTileState(int idx, var callback, String val) {
+  DataTileState(int idx, String val) {
     this.idx = idx;
-    this.callback = callback;
     this.val = val;
   }
 
@@ -64,9 +37,6 @@ class DataTileState extends State<DataTile> {
     }
 
     return GestureDetector(
-        onTap: () {
-          callback(false, idx);
-        },
         child: Container(
             decoration: BoxDecoration(boxShadow: [
               BoxShadow(
@@ -80,36 +50,54 @@ class DataTileState extends State<DataTile> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                Container(
+                  margin: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10),
+                  child:
                 Text(
                   dataTypes[this.idx],
-                  style: dataTileLabelStyle,
-                  textAlign: TextAlign.left,
-                ),
-                Padding(padding: EdgeInsets.all(5)),
-                Text(
-                  val.toString() + " " + symbols[idx],
-                  style: styleDataTileValue,
+                  style: TextStyle(
+                      color: statusColors[status],
+                      fontFamily: 'Avenir',
+                      fontSize: 22,
+                      height: startupLineHeight,
+                      fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
-                Padding(padding: EdgeInsets.all(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(width: 5, color: statusColors[status])),
+                ),
+
+                Padding(padding: EdgeInsets.all(15)),
+                Text(
+                  val.toString() + " " + symbols[idx],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontFamily: 'Avenir',
+                      fontSize: 30,
+                      height: startupLineHeight),
+                ),
+                Padding(padding: EdgeInsets.all(15)),
                 LinearProgressIndicator(
                   value: ratio,
                   backgroundColor: colorUnprogress,
                   valueColor: AlwaysStoppedAnimation<Color>(statusColors[status]),
                 ),
+                Padding(padding: EdgeInsets.all(5)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text(minMax[idx][0] + symbols[idx] , style: styleLinearProgressLabel),
-                    Text(minMax[idx][1]  + symbols[idx], style: styleLinearProgressLabel)
+                    Text(minMax[idx][0] + " " + symbols[idx] , style: styleLinearProgressLabel),
+                    Text(minMax[idx][1]  + " " + symbols[idx], style: styleLinearProgressLabel)
                   ],
                 ),
-                Padding(padding: EdgeInsets.all(5)),
+                Padding(padding: EdgeInsets.all(20)),
                 Text(
                   statusLabels[status],
-                  style: styleSafeLabel,
+                  style: TextStyle(fontFamily: 'Avenir', fontSize: 20, fontWeight: FontWeight.w900, height: startupLineHeight, color: statusColors[status]),
                   textAlign: TextAlign.center,
-                )
+                ),
+
               ],
             )));
   }
