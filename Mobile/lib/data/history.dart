@@ -1,3 +1,4 @@
+import 'package:env_ph/utility/util_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:env_ph/constants.dart';
@@ -40,11 +41,24 @@ Future<DataFeed> getJsonData() async {
 }
 
 class HistoryPageState extends State<HistoryPage> {
+  bool loaded = false;
 
   void initState() {
+    loaded = true;
     getJsonData();
     super.initState();
+    location.onLocationChanged().listen((value) {
+      if (loaded) {
+        setState(() {
+          userLocation = value;
+        });
+      }
+    });
+  }
 
+  void dispose() {
+    loaded = false;
+    super.dispose();
   }
 
   void toggleLang() {
@@ -256,7 +270,7 @@ class HistoryPageState extends State<HistoryPage> {
                           children: <Widget>[
                             Icon(Icons.location_on, color: colorBtn, size: 50),
                             Padding(padding: EdgeInsets.fromLTRB(0, 0, 5, 0)),
-                            Text("Dagupan, Pangasinan",
+                            Text(getClosestLocation(),
                                 style: TextStyle(
                                     fontFamily: 'Avenir', fontSize: 20))
                           ],

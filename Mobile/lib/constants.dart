@@ -5,7 +5,8 @@ import 'package:sqflite/sqflite.dart';
 final String url = "http://gramliu.com/env/index.php?action=query_data&src_id=810768&timestamp=2019-07-03-19";
 final List<String> langs = ["EN", "TG"];
 int lang_idx = 0;
-
+var location;
+Map<String, double> userLocation;
 
 final List<String> dataTypes = [
   "Temperature",
