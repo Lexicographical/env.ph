@@ -1,3 +1,4 @@
+import 'package:env_ph/utility/util_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:env_ph/constants.dart';
@@ -9,6 +10,8 @@ import 'dart:convert';
 import 'package:flutter_sparkline/flutter_sparkline.dart';
 import 'package:intl/intl.dart';
 import 'package:env_ph/data/history.dart';
+import 'package:location/location.dart';
+import 'package:env_ph/constants.dart';
 
 DataFeed dataFeed;
 
@@ -79,9 +82,24 @@ Future<DataFeed> getJsonData() async {
 }
 
 class AirPageState extends State<AirPage> {
+  bool loaded = false;
+
   void initState() {
+    loaded = true;
     super.initState();
     getJsonData();
+    location.onLocationChanged().listen((value) {
+      if (loaded) {
+        setState(() {
+          userLocation = value;
+        });
+      }
+    });
+  }
+
+  void dispose() {
+    loaded = false;
+    super.dispose();
   }
 
   void updateLayout(bool nGeneral, int nDataType) {
@@ -182,7 +200,7 @@ class AirPageState extends State<AirPage> {
                                     Padding(
                                         padding:
                                             EdgeInsets.fromLTRB(0, 0, 5, 0)),
-                                    Text("Dagupan, Pangasinan",
+                                    Text(getClosestLocation(),
                                         style: styleLocationText)
                                   ],
                                 ),

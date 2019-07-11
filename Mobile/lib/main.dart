@@ -1,3 +1,4 @@
+import 'package:env_ph/utility/util_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    initLocations();
     SystemChrome.setEnabledSystemUIOverlays([]);
     return MaterialApp(
         debugShowCheckedModeBanner: false,
