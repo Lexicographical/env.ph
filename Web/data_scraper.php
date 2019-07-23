@@ -2,24 +2,13 @@
 
 $tdata = "sensor_data";
 $tloc = "sensor_map";
-// $urls = [
-//     "https://thingspeak.com/channels/814173/feed.json",
-//     "https://thingspeak.com/channels/814176/feed.json",
-//     "https://thingspeak.com/channels/814180/feed.json",
-//     "https://thingspeak.com/channels/814241/feed.json",
-//     "https://thingspeak.com/channels/810768/feed.json"
-// ];
-
-$urls = [
-        "https://thingspeak.com/channels/814173/feed.json",
-    ];
 
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));
 }
 
 function getLastEntryId($src_id) {
-    $jstr = file_get_contents("http://localhost/Website/amihan/index.php?action=query_sensor&src_id=$src_id");
+    $jstr = file_get_contents("http://gramliu.com/amihan/index.php?action=query_sensor&src_id=$src_id");
     $jobj = json_decode($jstr, true);
     if ($jobj["error"]) {
         return -1;
