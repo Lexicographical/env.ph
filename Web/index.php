@@ -1,5 +1,7 @@
 <?php
 include("../auth.php");
+include("data_scraper.php");
+
 $host = "gramliu.com";
 $db = "gramliuc_env_ph";
 $tdata = "sensor_data";
@@ -10,12 +12,19 @@ $user = $credentials["user"];
 $pw = $credentials["password"];
 
 $mysqli = initDB();
-
-// TODO: Escape strings to prevent SQL injection
+$out = array();
+$out["error"] = false;
+$out["result"] = array();
+/* 
+Error Codes are in the form 120xy
+x - action code
+y - subaction code
+*/
 if (isset($_GET["action"])) {
     $action = $_GET["action"];
-
+    header('Content-type:application/json');
     if ($action == "data") {
+        // Action Code: 1
         // Data packets
         $src_id = $_GET["src_id"];
         $entry_id = $_GET["entry_id"];
@@ -25,11 +34,11 @@ if (isset($_GET["action"])) {
         $pm10 = $_GET["pm10"];
         $humidity = $_GET["humidity"];
         $temperature = $_GET["temperature"];
-        $carbon_dioxide = $_GET["carbon_dioxide"];
+        $voc = $_GET["voc"];
         $carbon_monoxide = $_GET["carbon_monoxide"];
 
         $sql_data = "INSERT INTO $tdata
-        (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, carbon_dioxide, carbon_monoxide)
+        (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide)
         VALUES (
             ?,
             ?,
@@ -44,10 +53,11 @@ if (isset($_GET["action"])) {
         )";
         $stmt = $mysqli->prepare($sql_data);
         $stmt->bind_param("iisddddddd", $src_id, $entry_id, $entry_time, $pm1, $pm2_5, $pm10,
-         $humidity, $temperature, $carbon_dioxide, $carbon_monoxide);
+         $humidity, $temperature, $voc, $carbon_monoxide);
         $res = $stmt->execute();
         if (!$res) {
-            echo $stmt->error;
+            $out["error"] = true;
+            $out["result"][] = "[Error 12010] " . $stmt->error;
         }
         $stmt->close();
 
@@ -65,59 +75,20 @@ if (isset($_GET["action"])) {
         $stmt->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
         $res = $stmt->execute();    
         if (!$res) {
-            echo $stmt->error;
+            $out["error"] = true;
+            $out["result"][] = "[Error 12011] " . $stmt->error;
         }
         $stmt->close();
-    } else if ($action == "register") {
-        // Register new module
-        $src_id = $_GET["src_id"];
-        $location_name = $_GET["location_name"];
-        $latitude = $_GET["latitude"];
-        $longitude = $_GET["longitude"];
-        $last_update = 0;
-        $last_entry_id = 0;
-
-        if (isset($_GET["last_update"])) {
-            $last_update = $_GET["last_update"];
-        }
-        if (isset($_GET["last_entry_id"])) {
-            $last_entry_id = $_GET["last_entry_id"];
-        }
-
-        $sql = "INSERT INTO $tloc
-        (src_id, location_name, latitude, longitude, creation_time, last_update, last_entry_id)
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            NOW(),
-            ?,
-            ?
-        )";
-        $stmt = $mysqli->prepare($sql);
-        $stmt->bind_param("isddsi", $src_id, $location_name, $latitude, $longitude, $last_update, $last_entry_id);
-        $res = $stmt->execute();
-        if (!$res) {
-            echo $stmt->error;
-        }
-        $stmt->close();
+        echo json_encode($out);
     } else if ($action == "query_data") {
+        // Action Code: 2
         // Data queries
         $src_id = $_GET["src_id"];
         $ref_time = $_GET["timestamp"];
 
         $sql_arr = array();
-        // $sql_arr[] = "SELECT entry_time, pm1, pm2_5, pm10, 
-        // humidity, temperature, carbon_dioxide, carbon_monoxide
-        // FROM sensor_data data
-        // WHERE data.entry_id = (
-        //     SELECT last_entry_id
-        //     FROM sensor_map
-        //     WHERE src_id=?
-        // )";
         $sql_arr[] = "SELECT entry_time, pm1, pm2_5, pm10, 
-        humidity, temperature, carbon_dioxide, carbon_monoxide
+        humidity, temperature, voc, carbon_monoxide
         FROM $tdata
         WHERE src_id=? AND
             entry_time <= ?
@@ -129,7 +100,7 @@ if (isset($_GET["action"])) {
                     AVG(pm10),
                     AVG(humidity),
                     AVG(temperature),
-                    AVG(carbon_dioxide),
+                    AVG(voc),
                     AVG(carbon_monoxide)
                 FROM $tdata
                 WHERE src_id=? AND
@@ -141,7 +112,7 @@ if (isset($_GET["action"])) {
                     AVG(pm10),
                     AVG(humidity),
                     AVG(temperature),
-                    AVG(carbon_dioxide),
+                    AVG(voc),
                     AVG(carbon_monoxide)
                 FROM $tdata
                 WHERE src_id=? AND
@@ -153,7 +124,7 @@ if (isset($_GET["action"])) {
                     AVG(pm10),
                     AVG(humidity),
                     AVG(temperature),
-                    AVG(carbon_dioxide),
+                    AVG(voc),
                     AVG(carbon_monoxide)
                 FROM $tdata
                 WHERE src_id=? AND
@@ -165,7 +136,7 @@ if (isset($_GET["action"])) {
                 AVG(pm10),
                 AVG(humidity),
                 AVG(temperature),
-                AVG(carbon_dioxide),
+                AVG(voc),
                 AVG(carbon_monoxide)
             FROM $tdata
             WHERE src_id=? AND
@@ -175,7 +146,7 @@ if (isset($_GET["action"])) {
         $limits = array(1, 24, 7, 4, 12);
         $time_labels = array("latest", "day", "week", "month", "year");
         $data_labels = array("entry_time", "pm1", "pm2_5", "pm10",
-        "humidity", "temperature", "carbon_dioxide", "carbon_monoxide");
+        "humidity", "temperature", "voc", "carbon_monoxide");
         $output = array();
         for ($i = 0; $i < sizeof($sql_arr); $i++) {
             $sql = $sql_arr[$i];
@@ -203,48 +174,40 @@ if (isset($_GET["action"])) {
             $output[$time_labels[$i]] = $unit;
             $stmt->close();
         }
-        $json = json_encode($output);
-        header('Content-type:application/json');
-        echo $json;
+        echo json_encode($output);
     } else if ($action == "query_sensor") {
-    } else if ($action == "batch_update") {
-        if ($file = fopen("data.json", "r")) {
-            $jstr = "";
-            while (!feof($file)) {
-                $line = fgets($file);
-                $jstr .= $line;
-            }
-            fclose($file);
-            $json = json_decode($jstr, true);
+        // Action Code: 3
+        if (isset($_GET["src_id"])) {
 
-            $sql_data = "INSERT INTO $tdata
-            (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, carbon_dioxide, carbon_monoxide)
-            VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )";
-            $stmt = $mysqli->prepare($sql_data);
-            $src_id = "810768";
-            
-            foreach ($json as $entry) {
-                $stmt->bind_param("iisddddddd", $src_id, $entry["entry_id"], $entry["entry_time"], $entry["pm1"], $entry["pm2_5"], $entry["pm10"],
-                $entry["humidity"], $entry["temperature"], $entry["carbon_dioxide"], $entry["carbon_monoxide"]);
-                $res = $stmt->execute();
-                if (!$res) {
-                    echo $stmt->error;
+            $src_id = $_GET["src_id"];
+            $sql = "SELECT last_entry_id FROM $tloc WHERE src_id=?";
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res){
+                $out["error"] = true;
+                $out["result"][] = "[Error 12030] " . $stmt->error;
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_array();
+                if ($row != null) {
+                    $out["last_id"] = $row[0];
+                } else {
+                    $out["error"] = true;
+                    $out["result"][] = "[Error 12031] " . $stmt->error;
                 }
             }
+            echo json_encode($out);
             $stmt->close();
-
         }
+    } else if ($action == "batch_update") {
+        if (isset($_GET["src_id"])){ 
+            batch_update($mysqli, $_GET["src_id"], $out);
+        } else {
+            $out["error"]= true;
+            $out["result"][] = "[Error 12040] Missing src_id";
+        }
+        echo json_encode($out);
     }
 }
 
@@ -260,7 +223,7 @@ function initDB()
             pm10 double(6, 2),
             humidity double(6, 2),
             temperature double(6, 2),
-            carbon_dioxide double(6, 2),
+            voc double(6, 2),
             carbon_monoxide double(6, 2)
         )";
     $sql_map = "CREATE TABLE IF NOT EXISTS $tloc (
