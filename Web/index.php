@@ -70,7 +70,6 @@ if (isset($_GET["action"])) {
             $out["result"][] = "[Error 12011] " . $stmt->error;
         }
         $stmt->close();
-        echo json_encode($out);
     } else if ($action == "query_data") {
         // Action Code: 2
         // Data queries
@@ -165,7 +164,6 @@ if (isset($_GET["action"])) {
             $output[$time_labels[$i]] = $unit;
             $stmt->close();
         }
-        echo json_encode($output);
     } else if ($action == "query_sensor") {
         // Action Code: 3
         if (isset($_GET["src_id"])) {
@@ -177,7 +175,7 @@ if (isset($_GET["action"])) {
             $res = $stmt->execute();
             if (!$res){
                 $out["error"] = true;
-                $out["result"][] = "[Error 12030] " . $stmt->error;
+                $out["result"][] = "[Error 12031] " . $stmt->error;
             } else {
                 $result = $stmt->get_result();
                 $row = $result->fetch_array();
@@ -185,21 +183,53 @@ if (isset($_GET["action"])) {
                     $out["last_id"] = $row[0];
                 } else {
                     $out["error"] = true;
-                    $out["result"][] = "[Error 12031] " . $stmt->error;
+                    $out["result"][] = "[Error 12032] " . $stmt->error;
                 }
             }
-            echo json_encode($out);
             $stmt->close();
+        } else {
+            $out["error"] = true;
+            $out["result"][] = "[Error 12030] Missing src_id";
         }
     } else if ($action == "batch_update") {
+        // Action Code: 4
         if (isset($_GET["src_id"])){ 
             batch_update($mysqli, $_GET["src_id"], $out);
         } else {
             $out["error"]= true;
             $out["result"][] = "[Error 12040] Missing src_id";
         }
-        echo json_encode($out);
+    } else if ($action == "list_sensors") {
+        // Action code: 5
+        $sql = "SELECT src_id, location_name, latitude, longitude FROM $tloc";
+        $stmt = $mysqli->prepare($sql);
+        $res = $stmt->execute();
+        if (!$res) {
+            $out["error"] = true;
+            $out["result"][] = "[Error 12050] " . $stmt->error;
+        } else {
+            $result = $stmt->get_result();
+            $count = 0;
+            $out["sensors"] = array();
+            while (($row = $result->fetch_array()) != null) {
+                $count++;
+                $tmp = array();
+                $tmp["src_id"] = $row["src_id"];
+                $tmp["location_name"] = $row["location_name"];
+                $tmp["latitude"] = $row["latitude"];
+                $tmp["longitude"] = $row["longitude"];
+                $out["sensors"][] = $tmp;
+            }
+            $out["count"] = $count;
+        }
+    } else {
+        // Unknown action 13000
+        $out["error"] = true;
+        $out["result"][] = "[Error 13000] Unknown action";
     }
+    echo json_encode($out);
+} else {
+    echo "Lorem ipsum";
 }
 
 function initDB()
