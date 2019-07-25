@@ -1,16 +1,15 @@
 <?php
-
-$tdata = "sensor_data";
-$tloc = "sensor_map";
+include_once("constants.php");
 
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));
 }
 
-function getLastEntryId($src_id) {
-    $jstr = file_get_contents("http://gramliu.com/amihan/index.php?action=query_sensor&src_id=$src_id");
-    $jobj = json_decode($jstr, true);
-    if ($jobj["error"]) {
+function getLastEntryId($src_id, &$out) {
+    global $host;
+    $url = "http://$host/amihan/index.php?action=query_sensor&src_id=$src_id";
+    echo $url."<br>";
+    if ($jobj["error"] || $jstr == false) {
         return -1;
     } else {
         return $jobj["last_id"];
@@ -38,7 +37,10 @@ function batch_update($mysqli, $link_id, &$out) {
 
     $feed = $jobj["feeds"];
 
-    $cache_id = getLastEntryId($src_id);
+    $cache_id = getLastEntryId($src_id, $out);
+
+    $out["cache"] = $cache_id;
+    $out["last"] = $last_entry_id;
     header('Content-type:application/json');
     if ($cache_id < 0) {
         // New sensor. Register

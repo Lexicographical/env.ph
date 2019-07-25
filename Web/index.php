@@ -1,15 +1,6 @@
 <?php
-include("../auth.php");
-include("data_scraper.php");
-
-$host = "gramliu.com";
-$db = "gramliuc_env_ph";
-$tdata = "sensor_data";
-$tloc = "sensor_map";
-
-$credentials = getDBCredentials();
-$user = $credentials["user"];
-$pw = $credentials["password"];
+include_once("data_scraper.php");
+include_once("constants.php");
 
 $mysqli = initDB();
 $out = array();
@@ -237,6 +228,7 @@ function initDB()
         )";
     $mysqli = new mysqli($host, $user, $pw, $db);
     if ($mysqli->connect_error) {
+        echo $mysqli->connect_error;
         die("Failed to connect to server.");
     } else {
         $stmt = $mysqli->prepare($sql_data);
