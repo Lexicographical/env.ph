@@ -206,7 +206,7 @@ $app->get("/update", function($req, $response) {
             $last_update = formatDate($channel->updated_at);
             $last_entry_id = $channel->last_entry_id;
             $feed = $jobj->feeds;
-            $getLastEntryId = $this->guzzle->request('GET', 'http://localhost/amihan/public/query/sensor?src_id='.$src_id, ['http_errors' => false]);
+            $getLastEntryId = $this->guzzle->request('GET', 'http://localhost/query/sensor?src_id='.$src_id, ['http_errors' => false]);
             $jobj2 = json_decode($getLastEntryId->getBody());
             if (isset($jobj2->error)) $cache_id = -1;
             else $cache_id = $jobj2->last_id;
@@ -267,10 +267,10 @@ $app->get("/update", function($req, $response) {
                     }
                     $stmt_data->close();
                     $stmt_update->close();
-                    return $response->withStatus(404)->withJson(['error' => false, 'result' => "$count entries inserted for sensor $src_id"]); 
+                    return $response->withJson(['error' => false, 'result' => "$count entries inserted for sensor $src_id"]); 
                 }
             } else {
-                return $response->withStatus(404)->withJson(['error' => false, 'result' => "No new data for sensor $src_id"]); 
+                return $response->withJson(['error' => false, 'result' => "No new data for sensor $src_id"]); 
             }
         }
     } else return $response->withStatus(404)->withJson(['error' => true, 'code' => 12040, 'message' => '[Error 12040] Missing src_id']);
