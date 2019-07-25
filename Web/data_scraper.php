@@ -1,5 +1,5 @@
 <?php
-include_once("constants.php");
+include("constants.php");
 
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));
@@ -8,8 +8,10 @@ function formatDate($date) {
 function getLastEntryId($src_id, &$out) {
     global $host;
     $url = "http://$host/amihan/index.php?action=query_sensor&src_id=$src_id";
-    echo $url."<br>";
-    if ($jobj["error"] || $jstr == false) {
+    $jstr = file_get_contents($url);
+    $jobj = json_decode($jstr, true);
+
+    if ($jobj["error"] || $jstr === false) {
         return -1;
     } else {
         return $jobj["last_id"];
