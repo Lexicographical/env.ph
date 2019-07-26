@@ -32,7 +32,7 @@ $app->get("/data", function($req, $response) {
     }
     $stmt->close();
 
-    $sql_update = "UPDATE $tloc
+    $sql_update = "UPDATE sensor_map
     SET last_update = CASE
         WHEN last_update < ? THEN ?
         ELSE last_update
