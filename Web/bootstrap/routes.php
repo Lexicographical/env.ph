@@ -119,7 +119,6 @@ $app->get("/update/batch", function($req, $response) {
             $feed = $jobj->feeds;
             $getLastEntryId = $this->guzzle->request('GET', 'http://localhost/query/sensor?src_id='.$src_id, ['http_errors' => false]);
             $jobj2 = json_decode($getLastEntryId->getBody());
-            echo "<br>".$getLastEntryId->getBody();
             if (isset($jobj2->error)) {
                 $cache_id = -1;
             } else {
@@ -354,13 +353,15 @@ $app->get("/query/sensor", function($req, $response) {
         $src_id = $req->getQueryParams("src_id")['src_id'];
         $sql = "SELECT last_entry_id FROM sensor_map WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
+        $err = var_export($stmt, true);
+        // $err = "ye";
         if (!$stmt) {
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12201, 'message' => $this->mysqli->error]);
+            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
         }
         $stmt->bind_param("i", $src_id);
         $res = $stmt->execute();
         if (!$res){
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database']);
+            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
         } else {
             $result = $stmt->get_result();
             $row = $result->fetch_array();
