@@ -62,7 +62,7 @@ $app->get("/update/single", function($req, $response) {
     // 11000 -> 11010
     foreach ($arr as $param) {
         if (!isset($param)) {
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => (11000 + $count), 'message' => 'Missing parameter']);
+            return $response->withStatus(400)->withJson(['error' => true, 'code' => (11000 + $count), 'message' => 'Missing parameter']);
         }
         $count++;
     }
@@ -76,7 +76,7 @@ $app->get("/update/single", function($req, $response) {
     $res = $stmt->execute();
     $stmt->close();
     if (!$res) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 11020, 'message' => 'Error inserting data']);
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 11020, 'message' => 'Error inserting data']);
     }
 
     $sql_update = "UPDATE sensor_map
@@ -94,7 +94,7 @@ $app->get("/update/single", function($req, $response) {
     $res = $stmt->execute();    
     $stmt->close();
     if (!$res) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 11021, 'message' => 'Error updating entry indices']);
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 11021, 'message' => 'Error updating entry indices']);
     }
     return $response->withJson($out);
 });
@@ -134,7 +134,7 @@ $app->get("/update/batch", function($req, $response) {
                 $stmt->bind_param("isddssi", $src_id, $location_name, $latitude, $longitude, $creation_date, $last_update, $last_entry_id);
                 $res = $stmt->execute();
                 if (!$res) {
-                    return $response->withStatus(404)->withJson(['error' => true, 'code' => 11101, 'message' => 'Error registering new sensor. '.$stmt->error]);
+                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11101, 'message' => 'Error registering new sensor. '.$stmt->error]);
                 }
                 $stmt->close();
             }
@@ -158,7 +158,7 @@ $app->get("/update/batch", function($req, $response) {
                 $stmt_update = $this->mysqli->prepare($sql_update);
 
                 if ($stmt_data === FALSE || $stmt_update === FALSE) {
-                    return $response->withStatus(404)->withJson(['error' => true, 'code' => 11102, 'message' => $mysqli->error]);
+                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11102, 'message' => $mysqli->error]);
                 } else {
                     $count = 0;
                     foreach ($feed as $entry) {
@@ -177,12 +177,12 @@ $app->get("/update/batch", function($req, $response) {
                             $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
                         $res = $stmt_data->execute();
                         if (!$res) {
-                            return $response->withStatus(404)->withJson(['error' => true, 'code' => 11103, 'message' => $stmt_data->error]);
+                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11103, 'message' => $stmt_data->error]);
                         }
                         $stmt_update->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
                         $res = $stmt_update->execute();   
                         if (!$res) {
-                            return $response->withStatus(404)->withJson(['error' => true, 'code' => 11104, 'message' => $stmt_update->error]); 
+                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11104, 'message' => $stmt_update->error]); 
                         }
                     }
                     $stmt_data->close();
@@ -194,7 +194,7 @@ $app->get("/update/batch", function($req, $response) {
             }
         }
     } else {
-     return $response->withStatus(404)->withJson(['error' => true, 'code' => 11105, 'message' => 'Missing src_id']);
+     return $response->withStatus(400)->withJson(['error' => true, 'code' => 11105, 'message' => 'Missing src_id']);
     }
 });
 
@@ -241,7 +241,7 @@ $app->get("/query/data", function($req, $response) {
     }
 
     if (!$res) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
     }
 
 });
@@ -252,7 +252,7 @@ $app->get("/query/data_app", function($req, $response) {
     $ref_time = $req->getQueryParams("timestamp")['timestamp'];
 
     if (!isset($src_id) && !isset($ref_time)) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
+        return $response->withStatus(400)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
     }
 
     $sql_arr = array();
@@ -348,7 +348,7 @@ $app->get("/query/data_app", function($req, $response) {
 // 122xx
 $app->get("/query/sensor", function($req, $response) {
     if (!isset($req->getQueryParams("src_id")['src_id'])) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
+        return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
     } else {
         $src_id = $req->getQueryParams("src_id")['src_id'];
         $sql = "SELECT last_entry_id FROM sensor_map WHERE src_id=?";
@@ -356,12 +356,12 @@ $app->get("/query/sensor", function($req, $response) {
         $err = var_export($stmt, true);
         // $err = "ye";
         if (!$stmt) {
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
+            return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
         }
         $stmt->bind_param("i", $src_id);
         $res = $stmt->execute();
         if (!$res){
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
+            return $response->withStatus(500)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
         } else {
             $result = $stmt->get_result();
             $row = $result->fetch_array();
@@ -382,7 +382,7 @@ $app->get("/list", function($req, $response) {
     $stmt = $this->mysqli->prepare($sql);
     $res = $stmt->execute();
     if (!$res) {
-        return $response->withStatus(404)->withJson(['error' => true, 'code' => 13000, 'message' => 'Error querying database']);
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 13000, 'message' => 'Error querying database']);
     } else {
         $result = $stmt->get_result();
         $count = 0;
