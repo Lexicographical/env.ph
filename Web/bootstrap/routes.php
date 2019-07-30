@@ -16,6 +16,7 @@ a: generic action type
 1 - update
 2 - query
 3 - list
+5 - misc function calls
 =====
 b: specific action
 [1]
@@ -32,9 +33,38 @@ b: specific action
 c,d: error codes per specific action
 */
 
+// 150xx
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));
 }
+
+// 151xx
+function arrayToCSV($array, $header, &$out, $delimeter=',') {
+    $length = sizeof($array);
+    $str = "";
+    if ($length > 0) {
+        $width = sizeof($array[0]);
+        if ($width == sizeof($header)) {
+            for ($i = 0; $i < $width; $i++) {
+                $str .= $header[$i];
+                if ($width-1 !== $i) $str .= $delimeter;
+            }
+            for ($i = 0; $i < $length; $i++) {
+                $str .= "\r\n";
+                for ($j = 0; $j < $width; $j++) {
+                    $str .= $array[$i][$j];
+                    if ($width-1 !== $j) $str .= $delimeter;
+                }
+            }
+        } else {
+            $out["error"] = true;
+            $out["code"] = 15100;
+            $out["message"] = "Array width does not match header width";
+        }
+    }
+    return $str;
+}
+
 $app->get("/", function($req, $res) {
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
 });
@@ -205,6 +235,7 @@ $app->get("/query/data", function($req, $response) {
     $date_end = isset($req->getQueryParams()['date_end']) ? $req->getQueryParams()['date_end'] : false;
 
     $res = false;
+    $stmt = null;
     if ($src_id && $date_start && $date_end) {
         $sql = "SELECT * FROM sensor_data WHERE src_id=? AND entry_time >= ? AND entry_time <= ?";
         $stmt = $this->mysqli->prepare($sql);
@@ -238,8 +269,43 @@ $app->get("/query/data", function($req, $response) {
 
     if (!$res) {
         return $response->withStatus(500)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
+    } else {
+        $result = $stmt->get_result();
+        $stmt->close();
+        
+        $format = "json";
+        if (isset($req->getQueryParams()['format'])) {
+            $format = $req->getQueryParams()['format'];
+            if ($format != "json" && $format != "csv" && $format != "tsv") {
+                return $response->withStatus(500)->withJson(['error' => true, 'code' => 12001, 'message' => 'Invalid format specified']);
+            }
+        }
+        $data_labels = array("entry_time", "pm1", "pm2_5", "pm10",
+            "humidity", "temperature", "voc", "carbon_monoxide");
+        
+        if ($format == "csv" || $format == "tsv")  {
+            $output = array();
+            while (($row = $result->fetch_array()) != null) {
+                $tmp = array();
+                for ($i = 0; $i < sizeof($data_labels); $i++) {
+                    array_push($tmp, $row[$i]);
+                }
+                $output[] = $tmp;
+            }
+            $csv = arrayToCSV($output, $data_labels, $out, $format == "tsv" ? "\t" : ",");
+            return $response->withHeader('Content-type', "text/$format")->withHeader('Content-Disposition', "attachment; filename=data.$format")->write($csv);
+        } else {
+            $output = array();
+            while ($row = $result->fetch_array()) {
+                $tmp = array();
+                foreach ($data_labels as $label) {
+                    $tmp[$label] = $row[$label];
+                }
+                $output[] = $tmp;
+            }
+            return $response->withJson($output);
+        }
     }
-
 });
 
 // 121xx
@@ -349,8 +415,6 @@ $app->get("/query/sensor", function($req, $response) {
         $src_id = $req->getQueryParams()['src_id'];
         $sql = "SELECT last_entry_id FROM sensor_map WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
-        $err = var_export($stmt, true);
-        // $err = "ye";
         if (!$stmt) {
             return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
         }
