@@ -200,9 +200,9 @@ $app->get("/update/batch", function($req, $response) {
 
 // 120xx
 $app->get("/query/data", function($req, $response) {
-    $src_id = $res->getQueryParams("src_id")['src_id'];
-    $date_start = $res->getQueryParams("date_start")['date_start'];
-    $date_end = $res->getQueryParams("date_end")['date_end'];
+    $src_id = $req->getQueryParams("src_id")['src_id'];
+    $date_start = $req->getQueryParams("date_start")['date_start'];
+    $date_end = $req->getQueryParams("date_end")['date_end'];
 
     $flag_src = isset($src_id);
     $flag_date_start = isset($date_start);
