@@ -92,7 +92,7 @@ $app->get("/update/batch", function($req, $response) {
             if (isset($jobj2->error)) {
                 $cache_id = -1;
             } else {
-                $cache_id = $jobj2->last_id;
+                $cache_id = $jobj2->last_entry_id;
             }
             if ($cache_id < 0) {
                 // New sensor. Register
@@ -353,7 +353,7 @@ $app->get("/query/sensor", function($req, $response) {
         return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
     } else {
         $src_id = $req->getQueryParams()['src_id'];
-        $sql = "SELECT last_entry_id FROM sensor_map WHERE src_id=?";
+        $sql = "SELECT * FROM sensor_map WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
         if (!$stmt) {
             return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
@@ -364,9 +364,9 @@ $app->get("/query/sensor", function($req, $response) {
             return $response->withStatus(500)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
         } else {
             $result = $stmt->get_result();
-            $row = $result->fetch_array();
+            $row = $result->fetch_assoc();
             if ($row != null) { 
-                return $response->withJson(['last_id' => $row[0]]);
+                return $response->withJson($row);
             }
             else {
                 return $response->withStatus(404)->withJson(['error' => true, 'code' => 12203, 'message' => 'No entry found for sensor '.$src_id]);
