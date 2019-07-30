@@ -70,72 +70,12 @@ $app->get("/", function($req, $res) {
 });
 
 // 110xx
-$app->get("/update/single", function($req, $response) {
-    $out = array(
-        "error" => false,
-        "result" => array()
-    );
-
-    $src_id = $req->getQueryParams()['src_id'];
-    $entry_id = $req->getQueryParams()['entry_id'];
-    $entry_time = $req->getQueryParams()['entry_time'];
-    $pm1 = $req->getQueryParams()['pm1'];
-    $pm2_5 = $req->getQueryParams()['pm2_5'];
-    $pm10 = $req->getQueryParams()['pm10'];
-    $humidity = $req->getQueryParams()['humidity'];
-    $temperature = $req->getQueryParams()['temperature'];
-    $voc = $req->getQueryParams()['voc'];
-    $carbon_monoxide = $req->getQueryParams()['carbon_monoxide'];
-
-    $arr = array($src_id, $entry_id, $entry_time, $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
-    $count = 0;
-    // 11000 -> 11010
-    foreach ($arr as $param) {
-        if (!isset($param)) {
-            return $response->withStatus(400)->withJson(['error' => true, 'code' => (11000 + $count), 'message' => 'Missing parameter']);
-        }
-        $count++;
-    }
-
-    $sql_data = "INSERT INTO sensor_data
-    (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $this->mysqli->prepare($sql_data);
-    $stmt->bind_param("iisddddddd", $src_id, $entry_id, $entry_time, $pm1, $pm2_5, $pm10,
-        $humidity, $temperature, $voc, $carbon_monoxide);
-    $res = $stmt->execute();
-    $stmt->close();
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 11020, 'message' => 'Error inserting data']);
-    }
-
-    $sql_update = "UPDATE sensor_map
-    SET last_update = CASE
-        WHEN last_update < ? THEN ?
-        ELSE last_update
-    END,
-    last_entry_id = CASE
-        WHEN last_entry_id < ? THEN ?
-        ELSE last_entry_id
-    END";
-
-    $stmt = $this->mysqli->prepare($sql_update);
-    $stmt->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
-    $res = $stmt->execute();    
-    $stmt->close();
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 11021, 'message' => 'Error updating entry indices']);
-    }
-    return $response->withJson($out);
-});
-
-// 111xx
 $app->get("/update/batch", function($req, $response) {
     if (isset($req->getQueryParams()['src_id'])) {
         $src_id = $req->getQueryParams()['src_id'];
         $guzzleResponse = $this->guzzle->request('GET', "https://thingspeak.com/channels/".$src_id."/feed.json", ['http_errors' => false]);
         if ($guzzleResponse->getStatusCode() == 404) {
-            return $response->withStatus(404)->withJson(['error' => true, 'code' => 11100, 'message' => 'Unknown src_id']);
+            return $response->withStatus(404)->withJson(['error' => true, 'code' => 11000, 'message' => 'Unknown src_id']);
         } else {
             $jobj = json_decode($guzzleResponse->getBody());
             $channel = $jobj->channel;
@@ -164,7 +104,7 @@ $app->get("/update/batch", function($req, $response) {
                 $stmt->bind_param("isddssi", $src_id, $location_name, $latitude, $longitude, $creation_date, $last_update, $last_entry_id);
                 $res = $stmt->execute();
                 if (!$res) {
-                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11101, 'message' => 'Error registering new sensor. '.$stmt->error]);
+                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11001, 'message' => 'Error registering new sensor. '.$stmt->error]);
                 }
                 $stmt->close();
             }
@@ -188,7 +128,7 @@ $app->get("/update/batch", function($req, $response) {
                 $stmt_update = $this->mysqli->prepare($sql_update);
 
                 if ($stmt_data === FALSE || $stmt_update === FALSE) {
-                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11102, 'message' => $mysqli->error]);
+                    return $response->withStatus(500)->withJson(['error' => true, 'code' => 11002, 'message' => $mysqli->error]);
                 } else {
                     $count = 0;
                     foreach ($feed as $entry) {
@@ -207,12 +147,12 @@ $app->get("/update/batch", function($req, $response) {
                             $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
                         $res = $stmt_data->execute();
                         if (!$res) {
-                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11103, 'message' => $stmt_data->error]);
+                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11003, 'message' => $stmt_data->error]);
                         }
                         $stmt_update->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
                         $res = $stmt_update->execute();   
                         if (!$res) {
-                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11104, 'message' => $stmt_update->error]); 
+                            return $response->withStatus(500)->withJson(['error' => true, 'code' => 11004, 'message' => $stmt_update->error]); 
                         }
                     }
                     $stmt_data->close();
@@ -224,7 +164,7 @@ $app->get("/update/batch", function($req, $response) {
             }
         }
     } else {
-     return $response->withStatus(400)->withJson(['error' => true, 'code' => 11105, 'message' => 'Missing src_id']);
+     return $response->withStatus(400)->withJson(['error' => true, 'code' => 11005, 'message' => 'Missing src_id']);
     }
 });
 
