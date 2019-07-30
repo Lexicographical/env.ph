@@ -46,16 +46,16 @@ $app->get("/update/single", function($req, $response) {
         "result" => array()
     );
 
-    $src_id = $req->getQueryParams("src_id")['src_id'];
-    $entry_id = $req->getQueryParams("entry_id")['entry_id'];
-    $entry_time = $req->getQueryParams("entry_time")['entry_time'];
-    $pm1 = $req->getQueryParams("pm1")['pm1'];
-    $pm2_5 = $req->getQueryParams("pm2_5")['pm2_5'];
-    $pm10 = $req->getQueryParams("pm10")['pm10'];
-    $humidity = $req->getQueryParams("humidity")['humidity'];
-    $temperature = $req->getQueryParams("temperature")['temperature'];
-    $voc = $req->getQueryParams("voc")['voc'];
-    $carbon_monoxide = $req->getQueryParams("carbon_monoxide")['carbon_monoxide'];
+    $src_id = $req->getQueryParams()['src_id'];
+    $entry_id = $req->getQueryParams()['entry_id'];
+    $entry_time = $req->getQueryParams()['entry_time'];
+    $pm1 = $req->getQueryParams()['pm1'];
+    $pm2_5 = $req->getQueryParams()['pm2_5'];
+    $pm10 = $req->getQueryParams()['pm10'];
+    $humidity = $req->getQueryParams()['humidity'];
+    $temperature = $req->getQueryParams()['temperature'];
+    $voc = $req->getQueryParams()['voc'];
+    $carbon_monoxide = $req->getQueryParams()['carbon_monoxide'];
 
     $arr = array($src_id, $entry_id, $entry_time, $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
     $count = 0;
@@ -101,8 +101,8 @@ $app->get("/update/single", function($req, $response) {
 
 // 111xx
 $app->get("/update/batch", function($req, $response) {
-    if (isset($req->getQueryParams("src_id")['src_id'])) {
-        $src_id = $req->getQueryParams("src_id")['src_id'];
+    if (isset($req->getQueryParams()['src_id'])) {
+        $src_id = $req->getQueryParams()['src_id'];
         $guzzleResponse = $this->guzzle->request('GET', "https://thingspeak.com/channels/".$src_id."/feed.json", ['http_errors' => false]);
         if ($guzzleResponse->getStatusCode() == 404) {
             return $response->withStatus(404)->withJson(['error' => true, 'code' => 11100, 'message' => 'Unknown src_id']);
@@ -200,36 +200,32 @@ $app->get("/update/batch", function($req, $response) {
 
 // 120xx
 $app->get("/query/data", function($req, $response) {
-    $src_id = $req->getQueryParams("src_id")['src_id'];
-    $date_start = $req->getQueryParams("date_start")['date_start'];
-    $date_end = $req->getQueryParams("date_end")['date_end'];
-
-    $flag_src = isset($src_id);
-    $flag_date_start = isset($date_start);
-    $flag_date_end = isset($date_end);
+    $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
+    $date_start = isset($req->getQueryParams()['date_start']) ? $req->getQueryParams()['date_start'] : false;
+    $date_end = isset($req->getQueryParams()['date_end']) ? $req->getQueryParams()['date_end'] : false;
 
     $res = false;
-    if ($flag_src && $flag_date_start && $flag_date_end) {
+    if ($src_id && $date_start && $date_end) {
         $sql = "SELECT * FROM sensor_data WHERE src_id=? AND entry_time >= ? AND entry_time <= ?";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("iss", $src_id, $date_start, $date_end);
         $res = $stmt->execute();
-    } else if ($flag_src) {
+    } else if ($src_id) {
         $sql = "SELECT * FROM sensor_data WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("i", $src_id);
         $res = $stmt->execute();
-    } else if ($flag_date_start && $flag_date_end) {
+    } else if ($date_start && $date_end) {
         $sql = "SELECT * FROM sensor_data WHERE entry_time >= ? AND entry_time <= ?";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("ss", $date_start, $date_end);
         $res = $stmt->execute();
-    } else if ($flag_date_start) {
+    } else if ($date_start) {
         $sql = "SELECT * FROM sensor_data WHERE entry_time >= ?";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("s", $date_start);
         $res = $stmt->execute();
-    } else if ($flag_date_end) {
+    } else if ($date_end) {
         $sql = "SELECT * FROM sensor_data WHERE entry_time <= ?";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("s", $date_end);
@@ -248,8 +244,8 @@ $app->get("/query/data", function($req, $response) {
 
 // 121xx
 $app->get("/query/data_app", function($req, $response) {
-    $src_id = $req->getQueryParams("src_id")['src_id'];
-    $ref_time = $req->getQueryParams("timestamp")['timestamp'];
+    $src_id = $req->getQueryParams()['src_id'];
+    $ref_time = $req->getQueryParams()['timestamp'];
 
     if (!isset($src_id) && !isset($ref_time)) {
         return $response->withStatus(400)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
@@ -347,10 +343,10 @@ $app->get("/query/data_app", function($req, $response) {
 
 // 122xx
 $app->get("/query/sensor", function($req, $response) {
-    if (!isset($req->getQueryParams("src_id")['src_id'])) {
+    if (!isset($req->getQueryParams()['src_id'])) {
         return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
     } else {
-        $src_id = $req->getQueryParams("src_id")['src_id'];
+        $src_id = $req->getQueryParams()['src_id'];
         $sql = "SELECT last_entry_id FROM sensor_map WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
         $err = var_export($stmt, true);
