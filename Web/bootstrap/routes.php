@@ -250,12 +250,9 @@ $app->get("/query/data", function($req, $response) {
 
 // 121xx
 $app->get("/query/data_app", function($req, $response) {
-    $src_id = $req->getQueryParams()['src_id'];
-    $ref_time = $req->getQueryParams()['timestamp'];
-
-    if (!isset($src_id) && !isset($ref_time)) {
-        return $response->withStatus(400)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
-    }
+    $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
+    $ref_time = isset($req->getQueryParams()['timestamp']) ? $req->getQueryParams()['timestamp'] : date('Y-m-d H:i:s');
+    if (!$src_id) return $response->withStatus(400)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
 
     $sql_arr = array();
     $sql_arr[] = "SELECT entry_time, pm1, pm2_5, pm10, 
