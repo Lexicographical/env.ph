@@ -61,7 +61,6 @@ function arrayToCSV($array, $header, &$out, $delimeter=',') {
 }
 
 $app->get("/", function($req, $res) {
-    throw new Exception("troll");
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
 });
 
@@ -270,4 +269,9 @@ $app->get("/list", function($req, $response) {
         $out["count"] = $count;
         return $response->withJson($out);
     }
+});
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function($req, $res) {
+    $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
+    return $handler($req, $res);
 });
