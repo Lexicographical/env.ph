@@ -13,7 +13,12 @@ import 'package:env_ph/data/history.dart';
 import 'package:location/location.dart';
 import 'package:env_ph/constants.dart';
 
+import 'package:env_ph/data/locations.dart';
+
+
 DataFeed dataFeed;
+Locations sensorLocations;
+int location_id = 810768;
 
 
 var pageOptions = [AirPage(), HistoryPage(), Text("HE")];
@@ -24,6 +29,7 @@ class AirControl extends StatefulWidget {
 
 class AirControlState extends State<AirControl> {
   int _selectedPage = 0;
+
   void initState() {
     super.initState();
   }
@@ -62,32 +68,46 @@ class AirPage extends StatefulWidget {
   AirPageState createState() => AirPageState();
 }
 
-Future<DataFeed> getJsonData() async {
-  var response = await http.get(url);
+Future<DataFeed> getJsonData(int id) async {
+
+  print("HELLO FROM JSON");
+
+
+  var response = await http.get(url + id.toString());
+
+  var sensorResponse = await http.get(urlLocations);
 
   if (response.statusCode == 200) {
     // If the call to the server was successful, parse the JSON
     var data = json.decode(response.body);
+    var locationsData = json.decode(sensorResponse.body);
 
     dataFeed = new DataFeed.fromJson(data);
-
+    sensorLocations = new Locations.fromJson(locationsData);
 
   } else {
     // If that call was not successful, throw an error.
-    throw Exception('Failed to load post');
   }
 
   return dataFeed;
+
 
 }
 
 class AirPageState extends State<AirPage> {
   bool loaded = false;
+  DataFeed dataFeed;
+  Locations sensorLocations;
+  int location_id = 810768;
 
   void initState() {
+
     loaded = true;
     super.initState();
-    getJsonData();
+
+    getJsonData(location_id);
+
+
     location.onLocationChanged().listen((value) {
       if (loaded) {
         setState(() {
@@ -95,6 +115,7 @@ class AirPageState extends State<AirPage> {
         });
       }
     });
+
   }
 
   void dispose() {
@@ -110,15 +131,21 @@ class AirPageState extends State<AirPage> {
 
   List<Widget> generateDataTiles() {
 
-    List<DataTile> data = List(dataTypes.length);
+    List<DataTile> data = List(0);
 
-    data[0] = DataTile(0, dataFeed.latest[0].temp.toString());
-    data[1] = DataTile(1, dataFeed.latest[0].humidity.toString());
-    data[2] = DataTile(2, dataFeed.latest[0].carbonMonoxide.toString());
-    data[3] = DataTile(3, dataFeed.latest[0].carbonMonoxide.toString());
-    data[4] = DataTile(4, dataFeed.latest[0].pM_1.toString());
-    data[5] = DataTile(5, dataFeed.latest[0].pM_1.toString());
-    data[6] = DataTile(6, dataFeed.latest[0].pM_2_5.toString());
+    if(dataFeed != null) {
+      List<DataTile> data = List(dataTypes.length);
+
+      data[0] = DataTile(0, dataFeed.latest[0].temp.toString());
+      data[1] = DataTile(1, dataFeed.latest[0].humidity.toString());
+      data[2] = DataTile(2, dataFeed.latest[0].carbonMonoxide.toString());
+      data[3] = DataTile(3, dataFeed.latest[0].carbonMonoxide.toString());
+      data[4] = DataTile(4, dataFeed.latest[0].pM_1.toString());
+      data[5] = DataTile(5, dataFeed.latest[0].pM_1.toString());
+      data[6] = DataTile(6, dataFeed.latest[0].pM_2_5.toString());
+    }
+
+
 
     return data;
   }
@@ -130,124 +157,198 @@ class AirPageState extends State<AirPage> {
     });
   }
 
+  bool typing = false;
+  TextEditingController td = TextEditingController();
+
+
+  List<String> items = [];
+
+
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
+
+    print("HELLO FROM BUILD");
+
+    List<String> locations = List(0);
+
+
+    if (sensorLocations != null) {
+      List<String> locations = List(sensorLocations.sensors.length);
+      for (var i = 0; i < sensorLocations.sensors.length; i ++) {
+        locations[i] = sensorLocations.sensors[i].location_name;
+      }
+    }
+
+    final width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final height = MediaQuery
+        .of(context)
+        .size
+        .height;
 
     return Scaffold(
         body: FutureBuilder(
-            future: getJsonData(),
+            future: getJsonData(location_id),
             builder: (context, snapshot) {
-              return snapshot.data != null
-                  ? new Stack(
-                      children: <Widget>[
-                        Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Hero(
-                                tag: "toggleLang",
-                                child: FittedBox(
-                                    child: RawMaterialButton(
-                                        onPressed: toggleLang,
-                                        child: Text(langs[lang_idx],
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Avenir',
-                                                fontSize: 15)),
-                                        shape: CircleBorder(),
-                                        fillColor: colorBtn,
-                                        splashColor: colorBtnSelected,
-                                        elevation: 2,
-                                        padding: EdgeInsets.all(10))))),
 
-                        Positioned(
-                            top: 100,
-                            left: -50,
-                            child: Container(
-                                decoration: BoxDecoration(boxShadow: [
-                                  BoxShadow(
-                                      color: colorFloatShadow,
-                                      offset: Offset(0, 0),
-                                      blurRadius: 20,
-                                      spreadRadius: 5),
-                                ], shape: BoxShape.circle),
-                                child: Image(
-                                      width: width / 2.37,
-                                      height: width / 2.37,
-                                      image: AssetImage(
-                                          "assets/images/env_air_button_plain.png"),
-                                    ))),
-                        Positioned(
-                            top: 125,
-                            right: 20,
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Text("AIR QUALITY",
-                                        style: styleDataTypeText)
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Icon(Icons.location_on,
-                                        color: colorBtn, size: 50),
-                                    Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(0, 0, 5, 0)),
-                                    Text(getClosestLocation(),
-                                        style: styleLocationText)
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Container(
-                                        child: Text(
-                                          "UPDATED AS OF " + "\n" +
-                                            DateFormat.yMMMd().format(DateTime.parse(
-                                                dataFeed.latest[0].createdAt)) + " (" + DateFormat.Hm().format(DateTime.parse(
-                                              dataFeed.latest[0].createdAt)) + ")",
+              switch(snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  print(snapshot.connectionState);
+                  return Center(child: CircularProgressIndicator());
+                default:
+                  return Stack(
+                    children: <Widget>[
+                      Positioned(
+                          top: 10,
+                          right: 10,
+                          child: Hero(
+                              tag: "toggleLang",
+                              child: FittedBox(
+                                  child: RawMaterialButton(
+                                      onPressed: toggleLang,
+                                      child: Text(langs[lang_idx],
                                           style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
                                               fontFamily: 'Avenir',
-                                              fontSize: 15),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        margin:
-                                            EdgeInsets.fromLTRB(0, 10, 0, 0))
-                                  ],
-                                ),
-                              ],
-                            )),
-                        Container(
-                            height: MediaQuery.of(context).size.height / 2,
-                            margin: EdgeInsets.fromLTRB(
-                                20,
-                                MediaQuery.of(context).size.height / 2.75,
-                                0,
-                                0),
-                            child: GridView.count(
-                              // Create a grid with 2 columns. If you change the scrollDirection to
-                              // horizontal, this would produce 2 rows.
+                                              fontSize: 15)),
+                                      shape: CircleBorder(),
+                                      fillColor: colorBtn,
+                                      splashColor: colorBtnSelected,
+                                      elevation: 2,
+                                      padding: EdgeInsets.all(10))))),
+
+
+                      Positioned(
+                          top: height / 5,
+                          left: 25,
+                          child: Container(
+                            width: width - 50,
+                            child: TextField(
+
+                              controller: td,
+                              decoration: InputDecoration(
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: new BorderSide(
+                                        color: colorBtn, width: 2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: new BorderSide(
+                                        color: colorBtn, width: 2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  prefixIcon: Icon(
+                                      Icons.my_location, color: colorBtn)
+                              ),
+
+                              onTap: () {
+                                setState(() {
+                                  typing = true;
+                                });
+                              },
+                              onChanged: (text) {
+
+                                List<String> dummySearchList = List<String>();
+                                dummySearchList.addAll(locations);
+
+                                List<String> dummyListData = List<String>();
+                                dummySearchList.forEach((item) {
+                                  if (item.contains(text)) {
+                                    dummyListData.add(item);
+                                  }
+                                });
+
+                                setState(() {
+                                  items.clear();
+                                  items.addAll(dummyListData);
+                                });
+                                return;
+                              },
+                              onEditingComplete: () {
+                                setState(() {
+                                  typing = false;
+                                  FocusScope.of(context).requestFocus(
+                                      new FocusNode());
+                                });
+                                setState(() {
+                                  items.clear();
+                                  items.addAll(locations);
+                                });
+                              },
+                            ),
+                          )
+                      ),
+
+                      typing ? Positioned(
+                        top: 225,
+                        left: 25,
+                        child: Container(
+                            width: width - 50,
+                            height: 300,
+                            child: ListView.builder(
+                                itemCount: items.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    onTap: () {
+                                      print(index);
+                                      td.text = items[index];
+                                      print(sensorLocations.sensors[index].src_id);
+                                      setState(
+                                              () {
+                                            typing = false;
+                                            location_id = sensorLocations.sensors[index].src_id;
+                                          }
+                                      );
+                                      FocusScope.of(context).requestFocus(
+                                          new FocusNode());
+                                    },
+                                    leading: Icon(Icons.location_on),
+                                    title: Text('${items[index]}'),
+                                  );
+                                })
+                        ),
+                      ) : Container(),
+
+
+                      !typing ? Container(
+                          height: MediaQuery
+                              .of(context)
+                              .size
+                              .height / 2,
+                          margin: EdgeInsets.fromLTRB(
+                              20,
+                              MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height / 2.75,
+                              0,
+                              0),
+                          child: GridView.count(
+                            // Create a grid with 2 columns. If you change the scrollDirection to
+                            // horizontal, this would produce 2 rows.
                               crossAxisCount: 1,
                               scrollDirection: Axis.horizontal,
                               mainAxisSpacing: 2,
-                              childAspectRatio:
-                                  (width) /
-                                      (MediaQuery.of(context).size.height / 3),
-                              children: generateDataTiles()
-                            )
+                              childAspectRatio: (width) /
+                                  (MediaQuery
+                                      .of(context)
+                                      .size
+                                      .height / 3),
+                              children: generateDataTiles())) : Container(),
+                    ],
+                  );
 
 
-                        )],
-                    )
-                  : Center(child: CircularProgressIndicator());
+              }
+
             }));
   }
+
+
 }
+
+
 

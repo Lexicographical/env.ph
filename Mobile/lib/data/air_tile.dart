@@ -21,17 +21,22 @@ class AirTile {
 
   factory AirTile.fromJson(Map<String, dynamic> json) {
 
-    return new AirTile(
-      createdAt: json["entry_time"],
-      temp: json["temperature"].toDouble(),
-      humidity: json["humidity"].toDouble(),
-      carbonMonoxide: json["carbon_monoxide"].toDouble(),
-      carbonDioxide: json["carbon_dioxide"].toDouble(),
-      pM_1: json["pm1"].toDouble(),
-      pM_2_5: json["pm2_5"].toDouble(),
-      pM_10: json["pm10"].toDouble(),
 
-    );
+    if (json["entry_time"] != 0) {
+      return new AirTile(
+        createdAt: json["entry_time"] as String,
+        temp: double.parse(json["temperature"].toString()),
+        humidity: double.parse(json["humidity"].toString()),
+        carbonMonoxide: double.parse(json["carbon_monoxide"].toString()),
+        pM_1: double.parse(json["pm1"].toString()),
+        pM_2_5: double.parse(json["pm2_5"].toString()),
+        pM_10: double.parse(json["pm10"].toString()),
+
+      );
+    } else {
+      return null;
+    }
+
   }
 
 }
