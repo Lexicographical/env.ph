@@ -73,35 +73,37 @@ foreach ($ids as &$src_id) {
             } else {
                 $count = 0;
                 foreach ($feed as $entry) {
-                    $count++;
                     $entry_id = $entry->entry_id;
-                    $entry_time = formatDate($entry->created_at);
-                    $pm1 = $entry->field1;
-                    $pm2_5 = $entry->field2;
-                    $pm10 = $entry->field3;
-                    $humidity = $entry->field4;
-                    $temperature = $entry->field5;
-                    $voc = $entry->field6;
-                    $carbon_monoxide = $entry->field7;
+                    if ($entry_id > $cache_id) {
+                        $count++;
+                        $entry_time = formatDate($entry->created_at);
+                        $pm1 = $entry->field1;
+                        $pm2_5 = $entry->field2;
+                        $pm10 = $entry->field3;
+                        $humidity = $entry->field4;
+                        $temperature = $entry->field5;
+                        $voc = $entry->field6;
+                        $carbon_monoxide = $entry->field7;
 
-                    $stmt_data->bind_param("iisddddddd", $src_id, $entry_id, $entry_time,
-                        $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
-                    $res = $stmt_data->execute();
-                    if (!$res) {
-                        echo "$src_id: ERROR 11003: $stmt_data->error";
-                    }
-                    $stmt_update->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
-                    $res = $stmt_update->execute();   
-                    if (!$res) {
-                        echo "$src_id: ERROR 11004: $stmt_update->error";
+                        $stmt_data->bind_param("iisddddddd", $src_id, $entry_id, $entry_time,
+                            $pm1, $pm2_5, $pm10, $humidity, $temperature, $voc, $carbon_monoxide);
+                        $res = $stmt_data->execute();
+                        if (!$res) {
+                            echo "$src_id: ERROR 11003: $stmt_data->error";
+                        }
+                        $stmt_update->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
+                        $res = $stmt_update->execute();   
+                        if (!$res) {
+                            echo "$src_id: ERROR 11004: $stmt_update->error";
+                        }
                     }
                 }
                 $stmt_data->close();
                 $stmt_update->close();
-                echo "$src_id: $count entries inserted for sensor.";
+                echo "$src_id: $count entries inserted for sensor.<br>";
             }
         } else {
-            echo "$src_id: No new data.";
+            echo "$src_id: No new data.<br>";
         }
     }
     echo "\n";
