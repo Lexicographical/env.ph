@@ -33,11 +33,6 @@ b: specific action
 c,d: error codes per specific action
 */
 
-// 150xx
-function formatDate($date) {
-    return str_replace("Z", "", str_replace("T", " ", $date));
-}
-
 // 151xx
 function arrayToCSV($array, $header, &$out, $delimeter=',') {
     $length = sizeof($array);
@@ -66,6 +61,7 @@ function arrayToCSV($array, $header, &$out, $delimeter=',') {
 }
 
 $app->get("/", function($req, $res) {
+    throw new Exception("troll");
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
 });
 
@@ -108,9 +104,8 @@ $app->get("/query/data", function($req, $response) {
         $res = $stmt->execute();
     }
 
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
-    } else {
+    if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
+    else {
         $result = $stmt->get_result();
         $stmt->close();
         
@@ -121,16 +116,13 @@ $app->get("/query/data", function($req, $response) {
                 return $response->withStatus(500)->withJson(['error' => true, 'code' => 12001, 'message' => 'Invalid format specified']);
             }
         }
-        $data_labels = array("src_id", "entry_time", "pm1", "pm2_5", "pm10",
-            "humidity", "temperature", "voc", "carbon_monoxide");
+        $data_labels = array("src_id", "entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
         
         if ($format == "csv" || $format == "tsv")  {
             $output = array();
             while (($row = $result->fetch_array()) != null) {
                 $tmp = array();
-                for ($i = 0; $i < sizeof($data_labels); $i++) {
-                    array_push($tmp, $row[$i]);
-                }
+                for ($i = 0; $i < sizeof($data_labels); $i++) array_push($tmp, $row[$i]);
                 $output[] = $tmp;
             }
             $csv = arrayToCSV($output, $data_labels, $out, $format == "tsv" ? "\t" : ",");
@@ -139,9 +131,7 @@ $app->get("/query/data", function($req, $response) {
             $output = array();
             while ($row = $result->fetch_array()) {
                 $tmp = array();
-                foreach ($data_labels as $label) {
-                    $tmp[$label] = $row[$label];
-                }
+                foreach ($data_labels as $label) $tmp[$label] = $row[$label];
                 $output[] = $tmp;
             }
             return $response->withJson($output);
@@ -214,8 +204,7 @@ $app->get("/query/data_app", function($req, $response) {
     
     $limits = array(1, 24, 7, 4, 12);
     $time_labels = array("latest", "day", "week", "month", "year");
-    $data_labels = array("entry_time", "pm1", "pm2_5", "pm10",
-    "humidity", "temperature", "voc", "carbon_monoxide");
+    $data_labels = array("entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
     $output = array();
     for ($i = 0; $i < sizeof($sql_arr); $i++) {
         $sql = $sql_arr[$i];
@@ -228,15 +217,8 @@ $app->get("/query/data_app", function($req, $response) {
 
         for ($count = 0; $count < $limits[$i]; $count++) {
             $tmp = array();
-            if ($row = $result->fetch_array()) {
-                for ($j = 0; $j < sizeof($data_labels); $j++) {
-                    $tmp[$data_labels[$j]] = $row[$j];
-                }
-            } else {
-                for ($j = 0; $j < sizeof($data_labels); $j++) {
-                    $tmp[$data_labels[$j]] = 0;
-                }
-            }
+            if ($row = $result->fetch_array()) for ($j = 0; $j < sizeof($data_labels); $j++) $tmp[$data_labels[$j]] = $row[$j];
+            else for ($j = 0; $j < sizeof($data_labels); $j++) $tmp[$data_labels[$j]] = 0;
             $unit[$count] = $tmp;
         }
         $output[$time_labels[$i]] = $unit;
@@ -247,28 +229,20 @@ $app->get("/query/data_app", function($req, $response) {
 
 // 122xx
 $app->get("/query/sensor", function($req, $response) {
-    if (!isset($req->getQueryParams()['src_id'])) {
-        return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
-    } else {
+    if (!isset($req->getQueryParams()['src_id'])) return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
+    else {
         $src_id = $req->getQueryParams()['src_id'];
         $sql = "SELECT * FROM sensor_map WHERE src_id=?";
         $stmt = $this->mysqli->prepare($sql);
-        if (!$stmt) {
-            return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
-        }
+        if (!$stmt) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
         $stmt->bind_param("i", $src_id);
         $res = $stmt->execute();
-        if (!$res){
-            return $response->withStatus(500)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
-        } else {
+        if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
+        else {
             $result = $stmt->get_result();
             $row = $result->fetch_assoc();
-            if ($row != null) { 
-                return $response->withJson($row);
-            }
-            else {
-                return $response->withStatus(404)->withJson(['error' => true, 'code' => 12203, 'message' => 'No entry found for sensor '.$src_id]);
-            }
+            if ($row != null) return $response->withJson($row);
+            else return $response->withStatus(404)->withJson(['error' => true, 'code' => 12203, 'message' => 'No entry found for sensor '.$src_id]);
         }
         $stmt->close();
     }
@@ -279,9 +253,8 @@ $app->get("/list", function($req, $response) {
     $sql = "SELECT src_id, location_name, latitude, longitude FROM sensor_map";
     $stmt = $this->mysqli->prepare($sql);
     $res = $stmt->execute();
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 13000, 'message' => 'Error querying database']);
-    } else {
+    if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 13000, 'message' => 'Error querying database']);
+    else {
         $result = $stmt->get_result();
         $count = 0;
         $out["sensors"] = array();
