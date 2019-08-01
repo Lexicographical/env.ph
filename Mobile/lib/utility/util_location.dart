@@ -37,12 +37,11 @@ class Coordinate {
   }
 }
 
-Map<String, Coordinate> sensorLocations = Map<String, Coordinate>();
+Map<String, Coordinate> utilSensorLocations = Map<String, Coordinate>();
 
 // TODO: update sensor GPS locations here
 void initLocations() {
   location = new Location();
-  sensorLocations["Dagupan, Pangasinan"] = Coordinate(16.0433, 120.3333);
 }
 
 String getClosestLocation() {
@@ -52,8 +51,8 @@ String getClosestLocation() {
   Coordinate current = Coordinate(userLocation["latitude"], userLocation["longitude"]);
   double closest = -1;
   String location = "n/a";
-  for (String locName in sensorLocations.keys) {
-    double dist = current.distance(sensorLocations[locName]);
+  for (String locName in utilSensorLocations.keys) {
+    double dist = current.distance(utilSensorLocations[locName]);
     if (closest < 0 || closest > dist) {
       closest = dist;
       location = locName;

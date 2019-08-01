@@ -14,7 +14,8 @@ import 'package:env_ph/data/air.dart';
 import 'dart:math';
 
 
-DataFeed dataFeed;
+int location_id = 810768;
+
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -23,13 +24,13 @@ class HistoryPage extends StatefulWidget {
 
 Future<DataFeed> getJsonData() async {
 
-  var response = await http.get(url);
+  var response = await http.get(url + location_id.toString());
 
   if (response.statusCode == 200) {
     // If the call to the server was successful, parse the JSON
     var data = json.decode(response.body);
 
-    dataFeed = new DataFeed.fromJson(data);
+    DataFeed dataFeed = new DataFeed.fromJson(data);
 
   } else {
     // If that call was not successful, throw an error.
@@ -118,65 +119,6 @@ class HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
 
 
-    int idx = dataTypes.indexOf(selectedData);
-
-    print(dataFeed);
-
-    if(selectedDay) {
-      length = dataFeed.day.length;
-      data = dataFeed.day;
-    } else if (selectedMonth) {
-      length = dataFeed.month.length;
-      data = dataFeed.month;
-    } else if (selectedYear) {
-      length = dataFeed.year.length;
-      data = dataFeed.year;
-    }
-
-    dataFactors = List(length);
-
-
-    switch (idx) {
-      case 0:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] = double.parse(data[i].temp.toString());
-        }
-        break;
-      case 1:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] = double.parse(data[i].humidity.toString());
-        }
-        break;
-      case 2:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] =
-              double.parse(data[i].carbonMonoxide.toString());
-        }
-        break;
-      case 3:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] =
-              double.parse(data[i].carbonDioxide.toString());
-        }
-        break;
-      case 4:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] = double.parse(data[i].pM_1.toString());
-          print(dataFactors[i]);
-        }
-        break;
-      case 5:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] = double.parse(data[i].pM_2_5.toString());
-        }
-        break;
-      case 6:
-        for (int i = 0; i < length; i++) {
-          dataFactors[i] = double.parse(data[i].pM_10.toString());
-        }
-        break;
-    }
-
     final width = MediaQuery
         .of(context)
         .size
@@ -186,19 +128,81 @@ class HistoryPageState extends State<HistoryPage> {
         .size
         .height;
 
-    var minimum = (dataFactors.reduce(min)).toInt();
-    var maximum = (dataFactors.reduce(max)).toInt();
-    var step = (maximum - minimum) / 5;
-    var data2 = (minimum + step).toInt();
-    var data3 = (minimum + 2 * step).toInt();
-    var data4 = (minimum + 3 * step).toInt();
-
-
     return Scaffold(
         body: FutureBuilder(
             future: getJsonData(),
             builder: (context, snapshot) {
-              return snapshot.data != null ? Stack(children: <Widget>[
+
+              if (snapshot.data != null) {
+                
+                int idx = dataTypes.indexOf(selectedData);
+
+                print(snapshot.data.week[0].temp);
+
+                if(selectedDay) {
+                  length = snapshot.data.day.length;
+                  data = snapshot.data.day;
+                } else if (selectedMonth) {
+                  length = snapshot.data.month.length;
+                  data = snapshot.data.month;
+                } else if (selectedYear) {
+                  length = snapshot.data.year.length;
+                  data = snapshot.data.year;
+                }
+
+                dataFactors = List(length);
+
+
+                switch (idx) {
+                  case 0:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] = double.parse(data[i].temp.toString());
+                    }
+                    break;
+                  case 1:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] = double.parse(data[i].humidity.toString());
+                    }
+                    break;
+                  case 2:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] =
+                          double.parse(data[i].carbonMonoxide.toString());
+                    }
+                    break;
+                  case 3:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] =
+                          double.parse(data[i].carbonDioxide.toString());
+                    }
+                    break;
+                  case 4:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] = double.parse(data[i].pM_1.toString());
+                      print(dataFactors[i]);
+                    }
+                    break;
+                  case 5:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] = double.parse(data[i].pM_2_5.toString());
+                    }
+                    break;
+                  case 6:
+                    for (int i = 0; i < length; i++) {
+                      dataFactors[i] = double.parse(data[i].pM_10.toString());
+                    }
+                    break;
+                }
+
+                var minimum = (dataFactors.reduce(min)).toInt();
+                var maximum = (dataFactors.reduce(max)).toInt();
+                var step = (maximum - minimum) / 5;
+                var data2 = (minimum + step).toInt();
+                var data3 = (minimum + 2 * step).toInt();
+                var data4 = (minimum + 3 * step).toInt();
+
+
+                return Stack(children: <Widget>[
 
                 Positioned(
                     top: 10,
@@ -445,7 +449,12 @@ class HistoryPageState extends State<HistoryPage> {
                                 colors: [Color(0xff05DCB6), Color(0xff0AF5F0)],
                               ),
                             ))))
-              ]) : Center(child: CircularProgressIndicator());
+              ]);
+
+              } else {
+                return CircularProgressIndicator();
+              }
+
             }
         ));
   }
