@@ -4,7 +4,7 @@ $dotenv = Dotenv\Dotenv::create(__DIR__.'/../');
 if (file_exists(__DIR__.'/../.env')) $dotenv->load();
 $config = [
 	'settings' => [
-		'displayErrorDetails' => true
+		'displayErrorDetails' => isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production"
 	]
 ];
 $container = new \Slim\Container($config);
@@ -23,5 +23,25 @@ $container['notFoundHandler'] = function ($container) {
     };
 };
 
+$container['errorHandler'] = function ($container) {
+    return function ($req, $res, $e) use ($container) {
+        if (isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production") return $res->send($e);
+        else return $res->withJson(['error' => true, 'code' => null, 'message' => 'Internal Server Error']);
+    };
+};
+
 $app = new \Slim\App($container);
+
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response;
+});
+
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+});
+
 require_once "routes.php";
