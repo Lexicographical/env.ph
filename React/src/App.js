@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Container, Grid, Form, Message, Radio } from 'semantic-ui-react';
+import { Card, Container, Grid, Form, Message, Radio } from 'semantic-ui-react';
 import { Formik } from 'formik';
 import MessengerCustomerChat from 'react-messenger-customer-chat';
+import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-const TableauEmbed = "<div class='tableauPlaceholder' id='viz1564565260018' style='position: relative'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ai&#47;AirQualityStations&#47;AirQualityStationsLocationDashboard&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='AirQualityStations&#47;AirQualityStationsLocationDashboard' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ai&#47;AirQualityStations&#47;AirQualityStationsLocationDashboard&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /></object></div>";
+const pointerIcon = new L.Icon({
+    iconUrl: require('./amihan.png'),
+    iconRetinaUrl: require('./amihan.png'),
+    iconSize: [50,50],
+});
 
 function App() {
     let [ deviceList, setDeviceList ] = useState(null);
-    useEffect(() => {
-        var divElement = document.getElementById('viz1564565260018');                    
-        var vizElement = divElement.getElementsByTagName('object')[0];                    
-        vizElement.style.width='100%';
-        vizElement.style.height=(divElement.offsetWidth*0.50)+'px';                    
-        var scriptElement = document.createElement('script');                    
-        scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    
-        vizElement.parentNode.insertBefore(scriptElement, vizElement);     
+    let [ locations, setLocations ] = useState(null);
+    let [ selected, setSelected ] = useState(null);
+    useEffect(() => { 
         fetch('https://api.amihan.xyz/list').then(res => res.json()).then(list => {
+            console.log(list);
             setDeviceList(list.sensors.map(x => {
                 return {
                     key: x.src_id,
                     text: x.location_name,
                     value: x.src_id
                 }
+            }));
+            setLocations(list.sensors.map(x => {
+                return (
+                    <Marker key={x.src_id} position={[x.latitude, x.longitude]} icon={pointerIcon}>
+                        <Popup onOpen={()=>setSelected(x.src_id)} onClose={()=>setSelected(null)}>
+                            {x.location_name}
+                        </Popup>
+                    </Marker>
+                );
             }));
         }).catch(() => {setDeviceList(false)});    
     }, []);
@@ -30,8 +42,14 @@ function App() {
             <img src="/logo.png" alt="Project Amihan" style={{ maxWidth: '576px', maxHeight: '128px' }} />
             <Grid>
                 <Grid.Row>
-                    <Grid.Column computer={12} only="large screen computer">
-                        <span dangerouslySetInnerHTML={{__html: TableauEmbed}} />
+                    <Grid.Column computer={12} tablet={16} mobile={16} >
+                        <Map center={[16.0287167,121.665402]} zoom={7} style={{height: '40vh', width: '100%'}}>
+                            <TileLayer
+                                url="https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png"
+                                attribution='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+                            />
+                            {locations}
+                        </Map>
                     </Grid.Column>
                     <Grid.Column computer={4} tablet={16} mobile={16}>
                         <h1>Request Dataset:</h1>
@@ -93,11 +111,64 @@ function App() {
                             </Message>
                         )}
                     </Grid.Column>
-                    <Grid.Column style={{ paddingTop: '2rem' }} mobile={16} only="tablet mobile">
-                        <center>
-                            <Button as="a" href="https://public.tableau.com/profile/wilson.chua/vizhome/AirQualityStations/AirQualityStationsLocationDashboard#!/vizhome/AirQualityStations/AirQualityStationsLocationDashboard">Access the Tableau Dataset</Button>
-                        </center>
-                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+            <br />
+            <Grid>
+                <Grid.Row>
+                    {selected && (
+                        <React.Fragment>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="PM 1.0 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+1.0+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="PM 2.5 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+2.5+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="PM 10 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/3?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+10+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="Humidity (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/4?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=Humidity+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="Temperature (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/5?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=Temperature+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="MQ - 135 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/6?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=MQ+-+135+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                            <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
+                                <center>
+                                    <Card style={styles.embedCard}>
+                                        <iframe title="MQ - 7 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/7?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=MQ-7+%2824hrs+Result%29&type=line`} />
+                                    </Card>
+                                </center>
+                            </Grid.Column>
+                        </React.Fragment>
+                    )}
                 </Grid.Row>
             </Grid>
             <br />
@@ -112,6 +183,18 @@ function App() {
             />
         </Container>
     );
+}
+
+const styles = {
+    embedCard: {
+        width: '450px', 
+        marginTop: '2rem'
+    },
+    embedIframe: {
+        border: 'none', 
+        width: '450px', 
+        height: '260px',
+    }
 }
 
 export default App;
