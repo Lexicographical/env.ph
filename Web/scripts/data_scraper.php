@@ -5,6 +5,10 @@ if (file_exists(__DIR__.'/../.env')) $dotenv->load();
 $mysqli = new mysqli($_ENV['MYSQL_DBHOST'], $_ENV['MYSQL_USERNAME'], $_ENV['MYSQL_PASSWORD'], $_ENV['MYSQL_DB']);
 $guzzle = new \GuzzleHttp\Client();
 
+if (!file_exists("update.log")) {
+
+}
+
 $ids = [814173, 814176, 814180, 814241, 810768];
 
 function formatDate($date) {
@@ -65,7 +69,8 @@ foreach ($ids as &$src_id) {
                 last_entry_id = CASE
                     WHEN last_entry_id < ? THEN ?
                     ELSE last_entry_id
-                END";
+                END
+                WHERE src_id=?";
             $stmt_update = $mysqli->prepare($sql_update);
 
             if ($stmt_data === FALSE || $stmt_update === FALSE) {
@@ -91,7 +96,7 @@ foreach ($ids as &$src_id) {
                         if (!$res) {
                             echo "$src_id: ERROR 11003: $stmt_data->error";
                         }
-                        $stmt_update->bind_param("ssii", $entry_time, $entry_time, $entry_id, $entry_id);
+                        $stmt_update->bind_param("ssiii", $entry_time, $entry_time, $entry_id, $entry_id, $src_id);
                         $res = $stmt_update->execute();   
                         if (!$res) {
                             echo "$src_id: ERROR 11004: $stmt_update->error";
