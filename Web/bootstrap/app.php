@@ -25,7 +25,7 @@ $container['notFoundHandler'] = function ($container) {
 
 $container['errorHandler'] = function ($container) {
     return function ($req, $res, $e) use ($container) {
-        if (isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production") return $res->send($e);
+        if (isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production") return $res->write($e);
         else return $res->withJson(['error' => true, 'code' => null, 'message' => 'Internal Server Error']);
     };
 };
