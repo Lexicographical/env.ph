@@ -4,6 +4,7 @@
     "require": {
         "slim/slim": "^3.12",
         "guzzlehttp/guzzle": "^6.3",
-        "vlucas/phpdotenv": "^3.4"
+        "vlucas/phpdotenv": "^3.4",
+        "monolog/monolog": "^1.24"
     }
 }

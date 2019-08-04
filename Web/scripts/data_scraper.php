@@ -5,11 +5,21 @@ if (file_exists(__DIR__.'/../.env')) $dotenv->load();
 $mysqli = new mysqli($_ENV['MYSQL_DBHOST'], $_ENV['MYSQL_USERNAME'], $_ENV['MYSQL_PASSWORD'], $_ENV['MYSQL_DB']);
 $guzzle = new \GuzzleHttp\Client();
 
-if (!file_exists("update.log")) {
-
-}
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 
 $ids = [814173, 814176, 814180, 814241, 810768];
+
+
+$format = "%datetime% > %level_name% > %message% %context% %extra%\n";
+$formatter = new LineFormatter($format);
+
+$log = new Logger("data_scraper");
+$stream = new StreamHandler("update.log", Logger::INFO);
+$stream->setFormatter($formatter);
+$log->pushHandler($stream);
+$log->info("Running data scraper.");
 
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));
@@ -82,10 +92,12 @@ foreach ($ids as &$src_id) {
                     }
                 }
                 $stmt_data->close();
-                echo "$src_id: $count entries inserted for sensor.";
+                echo "$src_id: $count entries inserted for sensor.<br>";
+                $log->info("Inserted new data", array("src_id" => $src_id, "count" => $count));
             }
         } else {
-            echo "$src_id: No new data.";
+            echo "$src_id: No new data.<br>";
+            $log->info("No new data.", array("src_id" => $src_id));
         }
     }
     echo "\n";
