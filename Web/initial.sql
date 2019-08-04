@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS sensor_map (
     latitude double(9, 5),
     longitude double(9, 5),
     creation_time timestamp NOT NULL,
-    last_update timestamp NOT NULL,
-    last_entry_id int(10)
+    last_update timestamp NOT NULL
 );
+
+ALTER TABLE `sensor_data` ADD `rec_id` INT UNSIGNED  NOT NULL  AUTO_INCREMENT  PRIMARY KEY  AFTER `carbon_monoxide`;
+ALTER TABLE `sensor_data` MODIFY COLUMN `rec_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT FIRST;
