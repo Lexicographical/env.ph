@@ -138,6 +138,67 @@ $app->get("/query/data", function($req, $response) {
     }
 });
 
+$app->get("/query/data/zip", function($req, $response) {
+    $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
+    $month = isset($req->getQueryParams()['month']) ? $req->getQueryParams()['month'] : false;
+    $year = isset($req->getQueryParams()['year']) ? $req->getQueryParams()['year'] : false;
+    if ($month && !$year) return $response->withStatus(400)->write("You need to place a year if you're querying a particular month.");
+    else if ($year && $month) $cd = (DateTime::createFromFormat('!Ym', $year.$month));
+    else if ($year) $cd = (DateTime::createFromFormat('!Y', $year));
+    if (isset($cd) && (!((new DateTime())->modify('-1 month') >= $cd))) return $response->withStatus(400)->write("Invalid Date Time (can be set up to one month before current month)");
+    if (!$src_id) $src_id_text = "main";
+    else $src_id_text = $src_id;
+    $filename = "$year/$month/$src_id_text.zip";
+    if ($filename === ".zip") $filename = "mainoutput.zip";
+    if (!file_exists("../files/$filename") || $filename === "mainoutput.zip" || ($year && !$month) || ($src_id && !$year && !$month)) {
+        $res = false;
+        $stmt = null;
+        $month1 = $month+1;
+        if ($month1 === 13) {
+            $month1 = 1;
+            $y1 = $year+1;
+        } else $y1 = $year;
+        if ($src_id && $year && $month) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-$month-01' AND '$y1-$month1-01' AND src_id=? ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else if ($month && $year) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-$month-01' AND '$y1-$month1-01' ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+        } else if ($src_id && $year) {
+            $y1 = $year+1;
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-01-01' AND '$y1-01-01' AND src_id=? ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else if ($year) {
+            $y1 = $year+1;
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-01-01' AND '$y1-01-01' ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+        } else if ($src_id) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data ORDER BY entry_time DESC";
+            $stmt = $this->mysqli->prepare($sql);
+        }
+        $res = $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        $data_labels = array("rec_id", "src_id", "entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
+        $output = array();
+        while (($row = $result->fetch_array()) != null) {
+            $tmp = array();
+            for ($i = 0; $i < sizeof($data_labels); $i++) array_push($tmp, $row[$i]);
+            $output[] = $tmp;
+        }
+        $csv = arrayToCSV($output, $data_labels, $out, ",");
+        $zipper = new \Chumper\Zipper\Zipper;
+        $zipper->make("../files/$filename")->addString("$filename.csv", $csv)->close();
+    }
+    return $response->withHeader('Content-type', "application/zip")->withHeader('Content-Disposition', "attachment; filename=$filename")->write(file_get_contents("../files/$filename"));
+});
+
 // 121xx
 $app->get("/query/data_app", function($req, $response) {
     $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
