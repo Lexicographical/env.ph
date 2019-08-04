@@ -150,7 +150,7 @@ $app->get("/query/data/zip", function($req, $response) {
     else $src_id_text = $src_id;
     $filename = "$year/$month/$src_id_text.zip";
     if ($filename === ".zip") $filename = "mainoutput.zip";
-    if (!file_exists("../files/$filename") || $filename === "mainoutput.zip" || ($year && !$month) || ($src_id && !$year && !$month)) {
+    if (!file_exists(getcwd()."../files/$filename") || $filename === "mainoutput.zip" || ($year && !$month) || ($src_id && !$year && !$month)) {
         $res = false;
         $stmt = null;
         $month1 = $month+1;
@@ -194,7 +194,7 @@ $app->get("/query/data/zip", function($req, $response) {
         }
         $csv = arrayToCSV($output, $data_labels, $out, ",");
         $zipper = new \Chumper\Zipper\Zipper;
-        $zipper->make("../files/$filename")->addString("$filename.csv", $csv)->close();
+        $zipper->make(getcwd()."/../files/$filename")->addString("$filename.csv", $csv)->close();
     }
     return $response->withHeader('Content-type', "application/zip")->withHeader('Content-Disposition', "attachment; filename=$filename")->write(file_get_contents("../files/$filename"));
 });
