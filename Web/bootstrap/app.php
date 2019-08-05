@@ -4,7 +4,8 @@ $dotenv = Dotenv\Dotenv::create(__DIR__.'/../');
 if (file_exists(__DIR__.'/../.env')) $dotenv->load();
 $config = [
 	'settings' => [
-		'displayErrorDetails' => isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production"
+        'determineRouteBeforeAppMiddleware' => true,
+        'displayErrorDetails' => isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production"
 	]
 ];
 $container = new \Slim\Container($config);
@@ -15,6 +16,10 @@ $container['guzzle'] = function ($container) {
 
 $container['mysqli'] = function ($container) {
     return new mysqli($_ENV['MYSQL_DBHOST'], $_ENV['MYSQL_USERNAME'], $_ENV['MYSQL_PASSWORD'], $_ENV['MYSQL_DB']);
+};
+
+$container['geoip_api_key'] = function ($container) {
+    return $_ENV["GEOIP_API_KEY"];
 };
 
 $container['notFoundHandler'] = function ($container) {

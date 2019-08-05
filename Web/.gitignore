@@ -1,3 +1,4 @@
 vendor/*
 .env
 scripts/update.log
+routes.log
