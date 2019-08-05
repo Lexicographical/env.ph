@@ -16,10 +16,9 @@ $format = "%datetime% > %level_name% > %message% %context% %extra%\n";
 $formatter = new LineFormatter($format);
 
 $log = new Logger("data_scraper");
-$stream = new StreamHandler("update.log", Logger::INFO);
+$stream = new StreamHandler("info.log", Logger::INFO);
 $stream->setFormatter($formatter);
 $log->pushHandler($stream);
-$log->info("Running data scraper.");
 
 function formatDate($date) {
     return str_replace("Z", "", str_replace("T", " ", $date));

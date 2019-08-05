@@ -1,64 +1,48 @@
 <?php
+use Slim\Exception\NotFoundException;
+require_once "utility.php";
 
-/*
-TODO
-download data in csv
-subset: date start end
-subset: location
-subset: sensor id
-*/
+// 15101-3
+$app->add(function($request, $response, $next) {
+    $response = $next($request, $response);
+    $apiKey = $this->get("geoip_api_key");
+    $cinfo = getConnectionInfo($apiKey);
+    $path = $request->getUri()->getPath();
+    $params = $request->getUri()->getQuery();
+    $ip = $cinfo["ip"];
 
-/*
-Action code guide
-1abcd
-=====
-a: generic action type
-1 - update
-2 - query
-3 - list
-5 - misc function calls
-=====
-b: specific action
-[1]
-0 - single
-1 - batch
+    $sql = "INSERT INTO action_log (ip, request, params) VALUES (?, ?, ?)";
+    $stmt = $this->get("mysqli")->prepare($sql);
+    $stmt->bind_param("sss", $ip, $path, $params);
+    $res = $stmt->execute();
+    $stmt->close();
+    if (!$res) {
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15101, 'message' => 'Error occured']);
+    }
 
-[2]
-0 - general query
-1 - app query
+    $sql = "SELECT EXISTS(SELECT * FROM ip_map WHERE ip=? LIMIT 1) as count;";
+    $stmt = $this->get("mysqli")->prepare($sql);
+    $stmt->bind_param("s", $ip);
+    $res = $stmt->execute();
 
-[3]
-0 - list sensors
-======
-c,d: error codes per specific action
-*/
-
-// 151xx
-function arrayToCSV($array, $header, &$out, $delimeter=',') {
-    $length = sizeof($array);
-    $str = "";
-    if ($length > 0) {
-        $width = sizeof($array[0]);
-        if ($width == sizeof($header)) {
-            for ($i = 0; $i < $width; $i++) {
-                $str .= $header[$i];
-                if ($width-1 !== $i) $str .= $delimeter;
+    if (!$res) {
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15102, 'message' => 'Error occured']);
+    } else {
+        $result = $stmt->get_result();
+        $row = $result->fetch_array();
+        if ($row[0] == 0) {
+            $sql = "INSERT INTO ip_map (ip, city, country, isp) VALUES (?, ?, ?, ?)";
+            $stmt = $this->get("mysqli")->prepare($sql);
+            $stmt->bind_param("ssss", $ip, $cinfo["city"], $cinfo["country"], $cinfo["isp"]);
+            $res = $stmt->execute();
+            if (!$res) {
+                return $response->withStatus(500)->withJson(['error' => true, 'code' => 15103, 'message' => 'Error occured']);
             }
-            for ($i = 0; $i < $length; $i++) {
-                $str .= "\r\n";
-                for ($j = 0; $j < $width; $j++) {
-                    $str .= $array[$i][$j];
-                    if ($width-1 !== $j) $str .= $delimeter;
-                }
-            }
-        } else {
-            $out["error"] = true;
-            $out["code"] = 15100;
-            $out["message"] = "Array width does not match header width";
         }
     }
-    return $str;
-}
+
+    return $response;
+});
 
 $app->get("/", function($req, $res) {
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
