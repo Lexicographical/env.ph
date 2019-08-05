@@ -89,7 +89,13 @@ $app->get("/query/data", function($req, $response) {
             $output = array();
             while (($row = $result->fetch_array()) != null) {
                 $tmp = array();
-                for ($i = 0; $i < sizeof($data_labels); $i++) array_push($tmp, $row[$i]);
+                for ($i = 0; $i < sizeof($data_labels); $i++) {
+                    if ($i === 2) {
+                        date_default_timezone_set('UTC');
+                        $row[$i] = (new DateTime($row[$i]))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
+                    }
+                    array_push($tmp, $row[$i]);
+                }
                 $output[] = $tmp;
             }
             $csv = arrayToCSV($output, $data_labels, $out, $format == "tsv" ? "\t" : ",");
@@ -98,7 +104,13 @@ $app->get("/query/data", function($req, $response) {
             $output = array();
             while ($row = $result->fetch_array()) {
                 $tmp = array();
-                foreach ($data_labels as $label) $tmp[$label] = $row[$label];
+                foreach ($data_labels as $label) {
+                    if ($label === "entry_time") {
+                        date_default_timezone_set('UTC');
+                        $tmp[$label] = (new DateTime($row[$label]))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
+                    }
+                    else $tmp[$label] = $row[$label];
+                }
                 $output[] = $tmp;
             }
             return $response->withJson($output);
@@ -157,7 +169,13 @@ $app->get("/query/data/zip", function($req, $response) {
         $output = array();
         while (($row = $result->fetch_array()) != null) {
             $tmp = array();
-            for ($i = 0; $i < sizeof($data_labels); $i++) array_push($tmp, $row[$i]);
+            for ($i = 0; $i < sizeof($data_labels); $i++) {
+                if ($i === 2) {
+                    date_default_timezone_set('UTC');
+                    $row[$i] = (new DateTime($row[$i]))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
+                }
+                array_push($tmp, $row[$i]);
+            }
             $output[] = $tmp;
         }
         $csv = arrayToCSV($output, $data_labels, $out, ",");
@@ -245,7 +263,12 @@ $app->get("/query/data_app", function($req, $response) {
 
         for ($count = 0; $count < $limits[$i]; $count++) {
             $tmp = array();
-            if ($row = $result->fetch_array()) for ($j = 0; $j < sizeof($data_labels); $j++) $tmp[$data_labels[$j]] = $row[$j];
+            if ($row = $result->fetch_array()) for ($j = 0; $j < sizeof($data_labels); $j++) {
+                if ($j === 0) {
+                    date_default_timezone_set('UTC');
+                    $tmp[$data_labels[$j]] = (new DateTime($row[$j]))->setTimezone(new DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s');
+                } else $tmp[$data_labels[$j]] = $row[$j];
+            }
             else for ($j = 0; $j < sizeof($data_labels); $j++) $tmp[$data_labels[$j]] = 0;
             $unit[$count] = $tmp;
         }
