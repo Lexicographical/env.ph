@@ -1,64 +1,48 @@
 <?php
+use Slim\Exception\NotFoundException;
+require_once "utility.php";
 
-/*
-TODO
-download data in csv
-subset: date start end
-subset: location
-subset: sensor id
-*/
+// 15101-3
+$app->add(function($request, $response, $next) {
+    $response = $next($request, $response);
+    $apiKey = $this->get("geoip_api_key");
+    $cinfo = getConnectionInfo($apiKey);
+    $path = $request->getUri()->getPath();
+    $params = $request->getUri()->getQuery();
+    $ip = $cinfo["ip"];
 
-/*
-Action code guide
-1abcd
-=====
-a: generic action type
-1 - update
-2 - query
-3 - list
-5 - misc function calls
-=====
-b: specific action
-[1]
-0 - single
-1 - batch
+    $sql = "INSERT INTO action_log (ip, request, params) VALUES (?, ?, ?)";
+    $stmt = $this->get("mysqli")->prepare($sql);
+    $stmt->bind_param("sss", $ip, $path, $params);
+    $res = $stmt->execute();
+    $stmt->close();
+    if (!$res) {
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15101, 'message' => 'Error occured']);
+    }
 
-[2]
-0 - general query
-1 - app query
+    $sql = "SELECT EXISTS(SELECT * FROM ip_map WHERE ip=? LIMIT 1) as count;";
+    $stmt = $this->get("mysqli")->prepare($sql);
+    $stmt->bind_param("s", $ip);
+    $res = $stmt->execute();
 
-[3]
-0 - list sensors
-======
-c,d: error codes per specific action
-*/
-
-// 151xx
-function arrayToCSV($array, $header, &$out, $delimeter=',') {
-    $length = sizeof($array);
-    $str = "";
-    if ($length > 0) {
-        $width = sizeof($array[0]);
-        if ($width == sizeof($header)) {
-            for ($i = 0; $i < $width; $i++) {
-                $str .= $header[$i];
-                if ($width-1 !== $i) $str .= $delimeter;
+    if (!$res) {
+        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15102, 'message' => 'Error occured']);
+    } else {
+        $result = $stmt->get_result();
+        $row = $result->fetch_array();
+        if ($row[0] == 0) {
+            $sql = "INSERT INTO ip_map (ip, city, country, isp) VALUES (?, ?, ?, ?)";
+            $stmt = $this->get("mysqli")->prepare($sql);
+            $stmt->bind_param("ssss", $ip, $cinfo["city"], $cinfo["country"], $cinfo["isp"]);
+            $res = $stmt->execute();
+            if (!$res) {
+                return $response->withStatus(500)->withJson(['error' => true, 'code' => 15103, 'message' => 'Error occured']);
             }
-            for ($i = 0; $i < $length; $i++) {
-                $str .= "\r\n";
-                for ($j = 0; $j < $width; $j++) {
-                    $str .= $array[$i][$j];
-                    if ($width-1 !== $j) $str .= $delimeter;
-                }
-            }
-        } else {
-            $out["error"] = true;
-            $out["code"] = 15100;
-            $out["message"] = "Array width does not match header width";
         }
     }
-    return $str;
-}
+
+    return $response;
+});
 
 $app->get("/", function($req, $res) {
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
@@ -73,32 +57,32 @@ $app->get("/query/data", function($req, $response) {
     $res = false;
     $stmt = null;
     if ($src_id && $date_start && $date_end) {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? AND entry_time >= ? AND entry_time <= ? ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? AND entry_time >= ? AND entry_time <= ? ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("iss", $src_id, $date_start, $date_end);
         $res = $stmt->execute();
     } else if ($src_id) {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("i", $src_id);
         $res = $stmt->execute();
     } else if ($date_start && $date_end) {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time >= ? AND entry_time <= ? ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time >= ? AND entry_time <= ? ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("ss", $date_start, $date_end);
         $res = $stmt->execute();
     } else if ($date_start) {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time >= ? ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time >= ? ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("s", $date_start);
         $res = $stmt->execute();
     } else if ($date_end) {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time <= ? ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time <= ? ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $stmt->bind_param("s", $date_end);
         $res = $stmt->execute();
     } else {
-        $sql = "SELECT src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data ORDER BY entry_time DESC";
+        $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data ORDER BY entry_time DESC";
         $stmt = $this->mysqli->prepare($sql);
         $res = $stmt->execute();
     }
@@ -115,7 +99,7 @@ $app->get("/query/data", function($req, $response) {
                 return $response->withStatus(500)->withJson(['error' => true, 'code' => 12001, 'message' => 'Invalid format specified']);
             }
         }
-        $data_labels = array("src_id", "entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
+        $data_labels = array("rec_id", "src_id", "entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
         
         if ($format == "csv" || $format == "tsv")  {
             $output = array();
@@ -136,6 +120,67 @@ $app->get("/query/data", function($req, $response) {
             return $response->withJson($output);
         }
     }
+});
+
+$app->get("/query/data/zip", function($req, $response) {
+    $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
+    $month = isset($req->getQueryParams()['month']) ? $req->getQueryParams()['month'] : false;
+    $year = isset($req->getQueryParams()['year']) ? $req->getQueryParams()['year'] : false;
+    if ($month && !$year) return $response->withStatus(400)->write("You need to place a year if you're querying a particular month.");
+    else if ($year && $month) $cd = (DateTime::createFromFormat('!Ym', $year.$month));
+    else if ($year) $cd = (DateTime::createFromFormat('!Y', $year));
+    if (isset($cd) && (!((new DateTime())->modify('-1 month') >= $cd))) return $response->withStatus(400)->write("Invalid Date Time (can be set up to one month before current month)");
+    if (!$src_id) $src_id_text = "main";
+    else $src_id_text = $src_id;
+    $filename = "$year/$month/$src_id_text.zip";
+    if ($filename === ".zip") $filename = "mainoutput.zip";
+    if (!file_exists(getcwd()."../files/$filename") || $filename === "mainoutput.zip" || ($year && !$month) || ($src_id && !$year && !$month)) {
+        $res = false;
+        $stmt = null;
+        $month1 = $month+1;
+        if ($month1 === 13) {
+            $month1 = 1;
+            $y1 = $year+1;
+        } else $y1 = $year;
+        if ($src_id && $year && $month) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-$month-01' AND '$y1-$month1-01' AND src_id=? ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else if ($month && $year) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-$month-01' AND '$y1-$month1-01' ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+        } else if ($src_id && $year) {
+            $y1 = $year+1;
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-01-01' AND '$y1-01-01' AND src_id=? ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else if ($year) {
+            $y1 = $year+1;
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE entry_time BETWEEN '$year-01-01' AND '$y1-01-01' ORDER BY entry_time DESC;";
+            $stmt = $this->mysqli->prepare($sql);
+        } else if ($src_id) {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC";
+            $stmt = $this->mysqli->prepare($sql);
+            $stmt->bind_param("i", $src_id);
+        } else {
+            $sql = "SELECT rec_id, src_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide FROM sensor_data ORDER BY entry_time DESC";
+            $stmt = $this->mysqli->prepare($sql);
+        }
+        $res = $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        $data_labels = array("rec_id", "src_id", "entry_time", "pm1", "pm2_5", "pm10", "humidity", "temperature", "voc", "carbon_monoxide");
+        $output = array();
+        while (($row = $result->fetch_array()) != null) {
+            $tmp = array();
+            for ($i = 0; $i < sizeof($data_labels); $i++) array_push($tmp, $row[$i]);
+            $output[] = $tmp;
+        }
+        $csv = arrayToCSV($output, $data_labels, $out, ",");
+        $zipper = new \Chumper\Zipper\Zipper;
+        $zipper->make(getcwd()."/../files/$filename")->addString("$filename.csv", $csv)->close();
+    }
+    return $response->withHeader('Content-type', "application/zip")->withHeader('Content-Disposition', "attachment; filename=$filename")->write(file_get_contents("../files/$filename"));
 });
 
 // 121xx
