@@ -16,7 +16,7 @@ $format = "%datetime% > %level_name% > %message% %context% %extra%\n";
 $formatter = new LineFormatter($format);
 
 $log = new Logger("data_scraper");
-$stream = new StreamHandler("info.log", Logger::INFO);
+$stream = new StreamHandler("/var/www/amihan/Web/scripts/info.log", Logger::INFO);
 $stream->setFormatter($formatter);
 $log->pushHandler($stream);
 
