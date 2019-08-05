@@ -5,43 +5,27 @@ require_once "utility.php";
 // 15101-3
 $app->add(function($request, $response, $next) {
     $response = $next($request, $response);
-    $apiKey = $this->get("geoip_api_key");
-    $cinfo = getConnectionInfo($apiKey);
     $path = $request->getUri()->getPath();
     $params = $request->getUri()->getQuery();
-    $ip = $cinfo["ip"];
-
-    $sql = "INSERT INTO action_log (ip, request, params) VALUES (?, ?, ?)";
-    $stmt = $this->get("mysqli")->prepare($sql);
-    $stmt->bind_param("sss", $ip, $path, $params);
-    $res = $stmt->execute();
-    $stmt->close();
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15101, 'message' => 'Error occured']);
-    }
-
-    $sql = "SELECT EXISTS(SELECT * FROM ip_map WHERE ip=? LIMIT 1) as count;";
-    $stmt = $this->get("mysqli")->prepare($sql);
-    $stmt->bind_param("s", $ip);
-    $res = $stmt->execute();
-
-    if (!$res) {
-        return $response->withStatus(500)->withJson(['error' => true, 'code' => 15102, 'message' => 'Error occured']);
-    } else {
-        $result = $stmt->get_result();
-        $row = $result->fetch_array();
-        if ($row[0] == 0) {
-            $sql = "INSERT INTO ip_map (ip, city, country, isp) VALUES (?, ?, ?, ?)";
-            $stmt = $this->get("mysqli")->prepare($sql);
-            $stmt->bind_param("ssss", $ip, $cinfo["city"], $cinfo["country"], $cinfo["isp"]);
+    if ($path !== "/favicon.ico") {
+        $cinfo = getConnectionInfo($this->get("geoip_api_key"), $this->get("mysqli"));
+        $ip = $cinfo["ip"];
+        $stmt1 = $this->get("mysqli")->prepare("SELECT COUNT(*) FROM action_log WHERE ip=? AND entry_time > (time(now()) - INTERVAL 60 MINUTE);");
+        $stmt1->bind_param("s", $ip);
+        $stmt1->execute();
+        $result = $stmt1->get_result();
+        $r1 = $result->fetch_array();
+        $stmt1->close();
+        if ($r1[0] > $_ENV['RATE_LIMIT_AFTER']) return $response->withHeader('X-RateLimit-Limit', $_ENV['RATE_LIMIT_AFTER'])->withHeader('X-RateLimit-Remaining', $_ENV['RATE_LIMIT_AFTER']-$r1[0])->withStatus(429)->withJson(['error' => true, 'message' => 'Rate limit exceeded for the past hour. Please try again later.']);
+        else {
+            $stmt = $this->get("mysqli")->prepare("INSERT INTO action_log (ip, request, params) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $ip, $path, $params);
             $res = $stmt->execute();
-            if (!$res) {
-                return $response->withStatus(500)->withJson(['error' => true, 'code' => 15103, 'message' => 'Error occured']);
-            }
+            $stmt->close();
+            if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 15101, 'message' => 'Error occured']);
         }
     }
-
-    return $response;
+    return $response->withHeader('X-RateLimit-Limit', $_ENV['RATE_LIMIT_AFTER'])->withHeader('X-RateLimit-Remaining', $_ENV['RATE_LIMIT_AFTER']-$r1[0]);
 });
 
 $app->get("/", function($req, $res) {

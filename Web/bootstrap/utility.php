@@ -44,6 +44,7 @@ function startsWith($str, $prefix) {
 }
 
 function isLocalIP($ip) {
+    if ($ip === "::1" || $ip === "127.0.0.1") return true;
     $prefixes = array("192.168.", "10.");
     foreach ($prefixes as $prefix) {
         if (startsWith($ip, $prefix)) {
@@ -60,52 +61,48 @@ function isLocalIP($ip) {
     return false;
 }
 
-function getConnectionInfo($apiKey) {
+function getConnectionInfo($apiKey, $mysqli) {
     global $log;
-    if(!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    } else {
-        $ip = $_SERVER['REMOTE_ADDR'];
-    }
-
-    if (isLocalIP($ip)) {
+    if(!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
+    else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    else $ip = $_SERVER['REMOTE_ADDR'];
+    $s1 = $mysqli->prepare("SELECT * FROM ip_map WHERE ip=? LIMIT 1");
+    $s1->bind_param("s", $ip);
+    $s1->execute();
+    $result = $s1->get_result();
+    $row = $result->fetch_array();
+    if ($row === null) {
+        if (isLocalIP($ip)) {
+            return array(
+                "ip" => $ip,
+                "city" => "local",
+                "country" => "local",
+                "isp" => "local"
+            );
+        }
+    
+        $url = "https://api.ipgeolocation.io/ipgeo?apiKey=".$apiKey."&ip=".$ip;
+        $guzzle = new \GuzzleHttp\Client();
+        $res = $guzzle->request('GET', $url);
+        $info = json_decode($res->getBody());
+    
+        if (isset($info->message)) {
+            $log->info("Unknown ip", array("ip" => $ip, "message" => $info->message));
+            return array(
+                "ip" => $ip,
+                "city" => "unknown",
+                "country" => "unknown",
+                "isp" => "unknown"
+            );
+        }
+        $stmt = $mysqli->prepare("INSERT INTO ip_map (ip, city, country, isp) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $ip, $info->city, $info->country_name, $info->isp);
+        $res = $stmt->execute();
         return array(
             "ip" => $ip,
-            "city" => "local",
-            "country" => "local",
-            "isp" => "local"
+            "city" => $info->city,
+            "country" => $info->country_name,
+            "isp" => $info->isp
         );
-    }
-
-    $url = "https://api.ipgeolocation.io/ipgeo?apiKey=".$apiKey."&ip=".$ip;
-
-    $cURL = curl_init();
-    curl_setopt($cURL, CURLOPT_URL, $url);
-    curl_setopt($cURL, CURLOPT_HTTPGET, true);
-    curl_setopt($cURL, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($cURL, CURLOPT_HTTPHEADER, array(
-        'Content-Type: application/json',
-        'Accept: application/json'
-    ));
-
-    $jObj = curl_exec($cURL);
-    $info = json_decode($jObj, true);
-
-    if (isset($info["message"])) {
-        $log->info("Unknown ip", array("ip" => $ip, "message" => $info["message"]));
-        return array(
-            "ip" => $ip,
-            "city" => "unknown",
-            "country" => "unknown",
-            "isp" => "unknown"
-        );
-    }
-    return array(
-        "ip" => $ip,
-        "city" => $info->city,
-        "country" => $info->country_name,
-        "isp" => $info->isp
-    );
+    } else return $row;
 }
