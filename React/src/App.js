@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Container, Grid, Form, Message, Radio } from 'semantic-ui-react';
 import { Formik } from 'formik';
+import MessengerCustomerChat from 'react-messenger-customer-chat';
 
 const TableauEmbed = "<div class='tableauPlaceholder' id='viz1564565260018' style='position: relative'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ai&#47;AirQualityStations&#47;AirQualityStationsLocationDashboard&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='AirQualityStations&#47;AirQualityStationsLocationDashboard' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Ai&#47;AirQualityStations&#47;AirQualityStationsLocationDashboard&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /></object></div>";
 
@@ -104,6 +105,11 @@ function App() {
                 <a style={{ paddingTop: '2rem' }} href="https://github.com/TeamOjt/Air-Quality-Monitoring-System">Are you a DIYer? Assemble your own Air Quality Station and help us contribute to the dataset!</a>
                 <p style={{ paddingTop: '2rem' }}>Made with love in the Philippines by the Philippine Innovation Network</p>
             </center>
+            <MessengerCustomerChat 
+                pageId="107222663954974"
+                themeColor="#63AABD"
+                appId=""
+            />
         </Container>
     );
 }
