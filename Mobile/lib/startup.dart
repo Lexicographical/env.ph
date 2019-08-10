@@ -129,16 +129,13 @@ class Page1 extends StatelessWidget {
                   textAlign: TextAlign.center,
                   text: TextSpan(style: styleStartupText, children: <TextSpan>[
                     TextSpan(
-                        text: 'The',
-                        style: TextStyle(height: startupLineHeight)),
-                    TextSpan(
-                        text: ' env.ph ',
+                        text: 'Project Amihan',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             height: startupLineHeight)),
                     TextSpan(
                         text:
-                            'team seeks to build a platform that provides environmental forecasts in real time.',
+                            ' sought to build a platform that predicts air quality.',
                         style: TextStyle(height: startupLineHeight)),
                   ])),
               padding: EdgeInsets.all(10)),
@@ -159,7 +156,7 @@ class Page2 extends StatelessWidget {
           Image(image: AssetImage("assets/images/starting_page_data.png")),
           Container(
               child: Text(
-                "Take control of your health and lifestyle by regularly monitoring the environment around you.",
+                "Watch your health by regularly monitoring the air you breathe in.",
                 style: styleStartupText,
                 textAlign: TextAlign.center,
               ),

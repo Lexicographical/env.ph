@@ -3,7 +3,6 @@ class AirTile {
    double temp;
    double humidity;
    double carbonMonoxide;
-   double carbonDioxide;
    double pM_1;
    double pM_2_5;
    double pM_10;
@@ -13,7 +12,6 @@ class AirTile {
       this.temp,
       this.humidity,
       this.carbonMonoxide,
-      this.carbonDioxide,
       this.pM_1,
       this.pM_2_5,
       this.pM_10});
@@ -23,6 +21,7 @@ class AirTile {
 
 
     if (json["entry_time"] != 0) {
+
       return new AirTile(
         createdAt: json["entry_time"] as String,
         temp: double.parse(json["temperature"].toString()),
@@ -62,6 +61,7 @@ class DataFeed {
     List<AirTile> latest = list1.map((i) => AirTile.fromJson(i)).toList();
 
     var list2 = json['day'] as List;
+
     List<AirTile> day = list2.map((i) => AirTile.fromJson(i)).toList();
 
     var list3 = json['week'] as List;
