@@ -10,6 +10,10 @@ $config = [
 ];
 $container = new \Slim\Container($config);
 
+$container['QueryController'] = function ($c) {
+    return new App\Controllers\QueryController($c);
+};
+
 $container['guzzle'] = function ($container) {
     return new \GuzzleHttp\Client();
 };
