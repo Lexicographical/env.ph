@@ -14,6 +14,10 @@ $container['QueryController'] = function ($c) {
     return new App\Controllers\QueryController($c);
 };
 
+$container['AuthController'] = function ($c) {
+    return new App\Controllers\AuthController($c);
+};
+
 $container['guzzle'] = function ($container) {
     return new \GuzzleHttp\Client();
 };

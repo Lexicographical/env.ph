@@ -9,6 +9,16 @@ $app->get("/", function($req, $res) {
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
 });
 
+$app->get("/secure", function($req, $res) {
+    $e = $req->getAttribute('user');
+	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
+})->add(new App\Middleware\JWTMiddleware($container));
+
+$app->group("/auth", function() {
+    $this->post("/register", "AuthController:register");
+    $this->post("/login", "AuthController:authenticate");
+});
+
 $app->group('/query', function() {
     // 120xx
     $this->get("/data", "QueryController:data");
