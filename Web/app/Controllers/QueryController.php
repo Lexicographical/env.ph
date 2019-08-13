@@ -41,8 +41,10 @@ class QueryController extends BaseController {
             $res = $stmt->execute();
         }
 
-        if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12000, 'message' => 'Error executing query']);
-        else {
+        if (!$res) {
+            error("Error executing query: ".$stmt->error, array("src" => "QueryController::data", "breakpoint" => "1"));
+            return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error executing query']);
+        } else {
             $result = $stmt->get_result();
             $stmt->close();
             
@@ -91,10 +93,13 @@ class QueryController extends BaseController {
         $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
         $month = isset($req->getQueryParams()['month']) ? $req->getQueryParams()['month'] : false;
         $year = isset($req->getQueryParams()['year']) ? $req->getQueryParams()['year'] : false;
-        if ($month && !$year) return $response->withStatus(400)->write("You need to place a year if you're querying a particular month.");
-        else if ($year && $month) $cd = (\DateTime::createFromFormat('!Ym', $year.$month));
+        if ($month && !$year) {
+            return $response->withStatus(400)->write("You need to place a year if you're querying a particular month.");
+        } else if ($year && $month) $cd = (\DateTime::createFromFormat('!Ym', $year.$month));
         else if ($year) $cd = (\DateTime::createFromFormat('!Y', $year));
-        if (isset($cd) && (!((new \DateTime())->modify('-1 month') >= $cd))) return $response->withStatus(400)->write("Invalid Date Time (can be set up to one month before current month)");
+        if (isset($cd) && (!((new \DateTime())->modify('-1 month') >= $cd))) {
+            return $response->withStatus(400)->write("Invalid Date Time (can be set up to one month before current month)");
+        }
         if (!$src_id) $src_id_text = "main";
         else $src_id_text = $src_id;
         $filename = "$year/$month/$src_id_text.zip";
@@ -156,8 +161,9 @@ class QueryController extends BaseController {
     public function app($req, $response) {
         $src_id = isset($req->getQueryParams()['src_id']) ? $req->getQueryParams()['src_id'] : false;
         $ref_time = isset($req->getQueryParams()['timestamp']) ? $req->getQueryParams()['timestamp'] : date('Y-m-d H:i:s');
-        if (!$src_id) return $response->withStatus(400)->withJson(['error' => true, 'code' => 12100, 'message' => 'Missing parameters']);
-
+        if (!$src_id) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing parameters']);
+        }
         $sql_arr = array();
         $sql_arr[] = "SELECT entry_time, pm1, pm2_5, pm10, 
         humidity, temperature, voc, carbon_monoxide
@@ -245,20 +251,28 @@ class QueryController extends BaseController {
         return $response->withJson($output);
     }
     public function sensor($req, $response) {
-        if (!isset($req->getQueryParams()['src_id'])) return $response->withStatus(400)->withJson(['error' => true, 'code' => 12200, 'message' => 'Missing src_id']);
-        else {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
             $src_id = $req->getQueryParams()['src_id'];
             $sql = "SELECT * FROM sensor_map WHERE src_id=?";
             $stmt = $this->mysqli->prepare($sql);
-            if (!$stmt) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12201, 'message' => $err]);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
             $stmt->bind_param("i", $src_id);
             $res = $stmt->execute();
-            if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 12202, 'message' => 'Error querying database. '.$stmt->error]);
-            else {
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
                 $result = $stmt->get_result();
                 $row = $result->fetch_assoc();
                 if ($row != null) return $response->withJson($row);
-                else return $response->withStatus(404)->withJson(['error' => true, 'code' => 12203, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                }
             }
             $stmt->close();
         }
@@ -267,8 +281,10 @@ class QueryController extends BaseController {
         $sql = "SELECT src_id, location_name, latitude, longitude FROM sensor_map";
         $stmt = $this->mysqli->prepare($sql);
         $res = $stmt->execute();
-        if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 13000, 'message' => 'Error querying database']);
-        else {
+        if (!$res) {
+            error("Error querying database: " . $this->mysqli->error, array("src" => "QueryController::list", "breakpoint" => "1"));
+            return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database']);
+        } else {
             $result = $stmt->get_result();
             $count = 0;
             $out["sensors"] = array();
