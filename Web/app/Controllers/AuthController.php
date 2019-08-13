@@ -49,4 +49,12 @@ class AuthController extends BaseController {
         $token = (new Builder())->issuedBy('https://api.amihan.xyz')->permittedFor('https://amihan.xyz')->identifiedBy($e, true)->getToken($signer, new Key($key));
         return $response->withJson(['token' => (String) $token, 'email' => $e, 'name' => $row['name']]);
     }
+    public function verify($req, $response) {
+        $e = $req->getAttribute('user');
+        $stmt = $this->mysqli->prepare("SELECT name, email, type FROM users WHERE email=?");
+        $stmt->bind_param("s", $e);
+        $res = $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $response->withJson($row);
+    }
 }

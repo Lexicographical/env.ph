@@ -13,9 +13,10 @@ $app->get("/secure", function($req, $res) {
 	return $res->withJson(["message" => "Hello, World! This is the Amihan API Server where real magic happens."]);
 })->add(new App\Middleware\JWTMiddleware($container));
 
-$app->group("/auth", function() {
+$app->group("/auth", function() use ($container) {
     $this->post("/register", "AuthController:register");
     $this->post("/login", "AuthController:authenticate");
+    $this->get("/verify", "AuthController:verify")->add(new App\Middleware\JWTMiddleware($container));
 });
 
 $app->group('/query', function() {

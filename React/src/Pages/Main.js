@@ -17,7 +17,6 @@ export default function Main() {
     let [ selected, setSelected ] = useState(null);
     useEffect(() => { 
         fetch('https://api.amihan.xyz/list').then(res => res.json()).then(list => {
-            console.log(list);
             setDeviceList(list.sensors.map(x => {
                 return {
                     key: x.src_id,
