@@ -6,12 +6,26 @@ use Monolog\Formatter\LineFormatter;
 $format = "%datetime% > %level_name% > %message% %context% %extra%\n";
 $formatter = new LineFormatter($format);
 
-$log = new Logger("route log");
-$stream = new StreamHandler("routes.log", Logger::INFO);
-$stream->setFormatter($formatter);
-$log->pushHandler($stream);
+$error_log = new Logger("amihan_error_log");
+$error_stream = new StreamHandler("logs/error.log", Logger::ERROR);
+$error_stream->setFormatter($formatter);
+$error_log->pushHandler($error_stream);
 
-// 15100
+$info_log = new Logger("amihan_info_log");
+$info_stream = new StreamHandler("logs/info.log", Logger::INFO);
+$info_stream->setFormatter($formatter);
+$info_log->pushHandler($info_stream);
+
+function info($msg, $params) {
+    global $info_log;
+    $info_log->info($msg, $params);
+}
+
+function error($msg, $params) {
+    global $error_log;
+    $error_log->error($msg, $params);
+}
+
 function arrayToCSV($array, $header, &$out, $delimeter=',') {
     $length = sizeof($array);
     $str = "";
@@ -62,7 +76,7 @@ function isLocalIP($ip) {
 }
 
 function getConnectionInfo($apiKey, $mysqli) {
-    global $log;
+    global $info_log;
     if(!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
     else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
     else $ip = $_SERVER['REMOTE_ADDR'];
@@ -87,7 +101,7 @@ function getConnectionInfo($apiKey, $mysqli) {
         $info = json_decode($res->getBody());
     
         if (isset($info->message)) {
-            $log->info("Unknown ip", array("ip" => $ip, "message" => $info->message));
+            info("Unknown ip", array("ip" => $ip, "message" => $info->message));
             return array(
                 "ip" => $ip,
                 "city" => "unknown",
