@@ -3,7 +3,7 @@ import { Button, Divider, Form, Grid, Message, Segment } from 'semantic-ui-react
 import { Link, withRouter } from 'react-router-dom';
 import { Formik } from 'formik';
 
-function Login({ history }) {
+function Login({ history, onUserLogin }) {
     let [loading, setLoading] = useState(false);
     let [loadingIndicator, setLoadingIndicator] = useState(false);
     return (
@@ -39,6 +39,7 @@ function Login({ history }) {
                                             window.localStorage.setItem('userToken', res.token);
                                             window.localStorage.setItem('userEmail', res.email);
                                             window.localStorage.setItem('userName', res.name);
+                                            onUserLogin(true);
                                             history.push('/');
                                         }
                                         else {
@@ -97,6 +98,7 @@ function Login({ history }) {
                                             window.localStorage.setItem('userToken', res.token);
                                             window.localStorage.setItem('userEmail', res.email);
                                             window.localStorage.setItem('userName', res.name);
+                                            onUserLogin(true);
                                             history.push('/');
                                         }
                                         else {
