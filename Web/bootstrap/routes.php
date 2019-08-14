@@ -27,6 +27,10 @@ $app->group('/query', function() {
     $this->get("/list", "QueryController:list");
 });
 
+$app->group('/user', function() {
+    $this->get('/sensors', "QueryController:userSensors");
+})->add(new App\Middleware\JWTMiddleware($container));
+
 $app->group("/update", function() {
     $this->get("/", "UpdateController:update");
 });
