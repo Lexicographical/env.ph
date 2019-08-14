@@ -301,4 +301,41 @@ class QueryController extends BaseController {
             return $response->withJson($out);
         }
     }
+    public function userSensors ($req, $response) {
+        $out = [];
+        $e = $req->getAttribute('user');
+        $stmt = $this->mysqli->prepare("SELECT src_id, location_name FROM sensor_map WHERE user_id = (SELECT id FROM users WHERE email=?);");
+        $stmt->bind_param("s", $e);
+        $res = $stmt->execute();
+        $result = $stmt->get_result();
+        while (($row = $result->fetch_array()) != null) {
+            $tmp = array();
+            $stmt2 = $this->mysqli->prepare("SELECT entry_time FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC LIMIT 1;");
+            $stmt2->bind_param("s", $row['src_id']);
+            $res2 = $stmt2->execute();
+            $result2 = $stmt2->get_result();
+            $row2 = $result2->fetch_array();
+            date_default_timezone_set('UTC');
+            $tmp["last_contact"] = (new \DateTime($row2[0]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
+            $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
+            if ($diff->d > 0) {
+                $d = $diff->d;
+                if ($d !== 1) $tmp["status"] = "Offline for $d days.";
+                else $tmp["status"] = "Offline for $d day.";
+                $tmp['status_color'] = "red";
+            } else if ($diff->h > 0) {
+                $h = $diff->h;
+                if ($h !== 1) $tmp["status"] = "Offline for $h hours.";
+                else $tmp["status"] = "Offline for $h hour.";
+                $tmp['status_color'] = "orange";
+            } else {
+                $tmp["status"] = "Active";
+                $tmp['status_color'] = "green";
+            }
+            $tmp["src_id"] = $row["src_id"];
+            $tmp["location_name"] = $row["location_name"];
+            $out[] = $tmp;
+        }
+        return $response->withJson($out);
+    }
 }
