@@ -5,7 +5,6 @@ namespace App\Middleware;
 class IPMiddleware extends BaseMiddleware
 {
     public function __invoke($request, $response, $next) {
-        $response = $next($request, $response);
         $path = $request->getUri()->getPath();
         $params = $request->getUri()->getQuery();
         if ($path !== "/favicon.ico") {
@@ -26,6 +25,7 @@ class IPMiddleware extends BaseMiddleware
                 if (!$res) return $response->withStatus(500)->withJson(['error' => true, 'code' => 15101, 'message' => 'Error occured']);
             }
         }
-        return $response->withHeader('X-RateLimit-Limit', $_ENV['RATE_LIMIT_AFTER'])->withHeader('X-RateLimit-Remaining', $_ENV['RATE_LIMIT_AFTER']-$r1[0]);
+        $response->withHeader('X-RateLimit-Limit', $_ENV['RATE_LIMIT_AFTER'])->withHeader('X-RateLimit-Remaining', $_ENV['RATE_LIMIT_AFTER']-$r1[0]);
+        return $next($request, $response);
     }
 }

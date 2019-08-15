@@ -2,6 +2,9 @@ import React from 'react';
 import { Container } from 'semantic-ui-react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import Main from './Pages/Main';
+import Administration from './Pages/Administration';
+import Accounts from './Pages/Accounts';
+import AdminDevices from './Pages/AdminDevices';
 import Login from './Pages/Login';
 import Dashboard from './Pages/Dashboard';
 import Device from './Pages/Device';
@@ -55,7 +58,9 @@ function App() {
                     <PublicRoute path="/login" exact component={Login} onUserLogin={setLoggedIn} />
                     <PrivateRoute path="/dashboard" exact component={Dashboard} user={user} />
                     <PrivateRoute path="/device/:id" exact component={Device} user={user} />
-                    <AdminRoute path="/administration" exact component={Dashboard} user={user} />
+                    <AdminRoute path="/administration/devices" exact component={AdminDevices} user={user} />
+                    <AdminRoute path="/administration/accounts" exact component={Accounts} user={user} />
+                    <AdminRoute path="/administration" exact component={Administration} user={user} />
                     <Route component={Error404} />
                 </Switch>
                 <Footer />
