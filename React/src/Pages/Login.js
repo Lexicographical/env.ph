@@ -89,7 +89,7 @@ function Login({ history, onUserLogin }) {
                                 }}
                                 onSubmit={(values, actions) => {
                                     setLoadingIndicator(true);
-                                    setLoading({message: `Logging in to ${values.email}'s account.`, positive: false, negative: false, info: true});
+                                    setLoading({message: `Creating an account for ${values.name} (${values.email}).`, positive: false, negative: false, info: true});
                                     fetch(`${server}/auth/register`, {
                                         method: 'POST',
                                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },

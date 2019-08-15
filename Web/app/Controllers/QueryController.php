@@ -316,21 +316,27 @@ class QueryController extends BaseController {
             $result2 = $stmt2->get_result();
             $row2 = $result2->fetch_array();
             date_default_timezone_set('UTC');
-            $tmp["last_contact"] = (new \DateTime($row2[0]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
-            $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
-            if ($diff->d > 0) {
-                $d = $diff->d;
-                if ($d !== 1) $tmp["status"] = "Offline for $d days.";
-                else $tmp["status"] = "Offline for $d day.";
-                $tmp['status_color'] = "red";
-            } else if ($diff->h > 0) {
-                $h = $diff->h;
-                if ($h !== 1) $tmp["status"] = "Offline for $h hours.";
-                else $tmp["status"] = "Offline for $h hour.";
-                $tmp['status_color'] = "orange";
+            if (!empty($row2[0])) {
+                $tmp["last_contact"] = (new \DateTime($row2[0]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
+                $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
+                if ($diff->d > 0) {
+                    $d = $diff->d;
+                    if ($d !== 1) $tmp["status"] = "Offline for $d days.";
+                    else $tmp["status"] = "Offline for $d day.";
+                    $tmp['status_color'] = "red";
+                } else if ($diff->h > 0) {
+                    $h = $diff->h;
+                    if ($h !== 1) $tmp["status"] = "Offline for $h hours.";
+                    else $tmp["status"] = "Offline for $h hour.";
+                    $tmp['status_color'] = "orange";
+                } else {
+                    $tmp["status"] = "Active";
+                    $tmp['status_color'] = "green";
+                }
             } else {
-                $tmp["status"] = "Active";
-                $tmp['status_color'] = "green";
+                $tmp["last_contact"] = "Never";
+                $tmp["status"] = "No Data";
+                $tmp['status_color'] = "black";
             }
             $tmp["src_id"] = $row["src_id"];
             $tmp["location_name"] = $row["location_name"];
