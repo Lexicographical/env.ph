@@ -48,10 +48,11 @@ CREATE TABLE IF NOT EXISTS users (
     type TEXT NOT NULL,
 	created_at timestamp NOT NULL DEFAULT NOW()
 );
-
-ALTER TABLE `sensor_map` CHANGE `src_id` `src_id` INT(10)  NOT NULL  AUTO_INCREMENT;
 ALTER TABLE `sensor_map` ADD `user_id` INT  NULL  DEFAULT NULL  AFTER `last_update`;
 ALTER TABLE `sensor_map` ADD `api_key` TEXT  NULL  AFTER `user_id`;
+ALTER TABLE `sensor_map` CHANGE `location_name` `location_name` TEXT  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL;
+
+ALTER TABLE `sensor_map` CHANGE `src_id` `src_id` INT(10)  NOT NULL  AUTO_INCREMENT;
 UPDATE `sensor_map` SET `src_id` = '1' WHERE `src_id` = '810768';
 UPDATE `sensor_map` SET `src_id` = '2' WHERE `src_id` = '814173';
 UPDATE `sensor_map` SET `src_id` = '3' WHERE `src_id` = '814176';
@@ -64,6 +65,5 @@ UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '5' WHERE `src_id` = '814241';
 ALTER TABLE `sensor_map` AUTO_INCREMENT = 1;
-/* 3:16:00 PM Localhost amihan */ ALTER TABLE `sensor_map` CHANGE `location_name` `location_name` TEXT  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL;
 
 
