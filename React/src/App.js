@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-d
 import Main from './Pages/Main';
 import Login from './Pages/Login';
 import Dashboard from './Pages/Dashboard';
+import Device from './Pages/Device';
 import Error404 from './Pages/Error404';
 import Header from './Components/Header';
 import Footer from './Components/Footer';
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/" exact component={Main} />
                     <PublicRoute path="/login" exact component={Login} onUserLogin={setLoggedIn} />
                     <PrivateRoute path="/dashboard" exact component={Dashboard} user={user} />
+                    <PrivateRoute path="/device/:id" exact component={Device} user={user} />
                     <AdminRoute path="/administration" exact component={Dashboard} user={user} />
                     <Route component={Error404} />
                 </Switch>
