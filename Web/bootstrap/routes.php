@@ -34,6 +34,8 @@ $app->group('/query', function() {
     $this->get("/list", "QueryController:list");
 });
 
+$app->get("/list", "QueryController:list");
+
 $app->group('/user', function() {
     $this->get('/sensors', "QueryController:userSensors");
     $this->get('/sensor/{id}', "QueryController:userSensor");
