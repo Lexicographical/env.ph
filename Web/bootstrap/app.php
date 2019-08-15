@@ -18,6 +18,10 @@ $container['AuthController'] = function ($c) {
     return new App\Controllers\AuthController($c);
 };
 
+$container["SensorController"] = function($c) {
+    return new App\Controllers\SensorController($c);
+};
+
 $container["UpdateController"] = function($c) {
     return new App\Controllers\UpdateController($c);
 };

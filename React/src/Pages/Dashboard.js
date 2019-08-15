@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Icon, Label, Table } from 'semantic-ui-react';
+import { Button, Container, Form, Icon, Label, Message, Modal, Table } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { Formik } from 'formik';
 
 const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
 
-export default function Dashboard({ user }) {
+function Dashboard({ user }) {
     let [ devices, setDevices ] = useState();
+    let [ loading, setLoading ] = useState(false);
+    let [ modalOpen, setModalOpen ] = useState(false);
     useEffect(() => {
         fetch(`${server}/user/sensors`, {
                 method: 'GET',
@@ -14,8 +17,8 @@ export default function Dashboard({ user }) {
             .then(data => data.map(x => {
                 return (
                     <Table.Row key={x.src_id}>
-                        <Table.Cell>
-                            <Link to={`/device/${x.src_id}`}>{x.location_name}</Link>
+                        <Table.Cell selectable>
+                            <Link to={`/device/${x.src_id}`} style={{ color: '#4183c4' }}>{x.location_name}</Link>
                         </Table.Cell>
                         <Table.Cell>{x.last_contact}</Table.Cell>
                         <Table.Cell>
@@ -24,10 +27,10 @@ export default function Dashboard({ user }) {
                     </Table.Row>
                 );
             })).then(setDevices);
-    }, [user]);
+    }, [user, loading]);
     return (
         <Container fluid>
-            <Table celled striped>
+            <Table celled striped selectable>
                 <Table.Header>
                     <Table.Row>
                         <Table.HeaderCell colSpan='3'>Your Devices</Table.HeaderCell>
@@ -44,9 +47,63 @@ export default function Dashboard({ user }) {
                 <Table.Footer fullWidth>
                     <Table.Row>
                         <Table.HeaderCell colSpan='3'>
-                            <Button floated='right' icon labelPosition='left' primary size='small'>
-                                <Icon name='computer' /> Add a new Device
-                            </Button>
+                            <Formik
+                                initialValues={{name: ''}}
+                                validate={values => {
+                                    let errors = {};
+                                    if (values.name.length < 6) errors.name = "Location must be 6 characters long."
+                                    return errors;
+                                }}
+                                onSubmit={(values, actions) => {
+                                    setLoading({message: `Adding device located at ${values.name}.`, positive: false, negative: false, info: true});
+                                    fetch(`${server}/user/create/sensor`, {
+                                        method: 'POST',
+                                        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.localStorage.userToken}` },
+                                        body: JSON.stringify(values)
+                                    }).then(res => {
+                                        if (res.status === 204) {
+                                            setLoading({message: `Device successfully added.`, positive: true, negative: false, info: false});
+                                            setModalOpen(false);
+                                        }
+                                        else {
+                                            let m = res.json();
+                                            setLoading({message: m.message, positive: false, negative: true, info: false});
+                                            actions.setSubmitting(false);
+                                        }
+                                    });
+                                }}
+                            >
+                                {({ values, errors, handleChange, handleSubmit, isSubmitting }) => (
+                                    <Modal 
+                                        trigger={
+                                            <Button floated='right' icon labelPosition='left' primary size='small' onClick={() => setModalOpen(true)}>
+                                                <Icon name='computer' /> Add a new Device
+                                            </Button>
+                                        }
+                                        open={modalOpen}
+                                        closeOnDimmerClick={!isSubmitting}
+                                        closeOnEscape={!isSubmitting}
+                                        centered={false}
+                                        closeIcon={!isSubmitting}
+                                    >
+                                        <Modal.Header>Add a new Device</Modal.Header>
+                                        <Modal.Content>
+                                            <Modal.Description>
+                                                {loading && (
+                                                    <Message positive={loading.positive} negative={loading.negative} info={loading.info} content={loading.message} />
+                                                )}
+                                                <Form>
+                                                    <Form.Field>
+                                                        <label>Location of Device</label>
+                                                        <Form.Input onChange={handleChange} error={errors.name} value={values.name} placeholder="1 Roxas Bvld. Manila, Philippines" type="text" name="name" required />
+                                                    </Form.Field>
+                                                    <Button color="green" type="submit" disabled={isSubmitting || Object.keys(errors).length > 0} loading={isSubmitting} onClick={handleSubmit} fluid>Add Device</Button>
+                                                </Form>
+                                            </Modal.Description>
+                                        </Modal.Content>
+                                    </Modal>
+                                )}
+                            </Formik>
                         </Table.HeaderCell>
                     </Table.Row>
                 </Table.Footer>
@@ -54,3 +111,5 @@ export default function Dashboard({ user }) {
         </Container>
     );
 }
+
+export default Dashboard;

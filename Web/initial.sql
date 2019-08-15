@@ -63,3 +63,5 @@ UPDATE `sensor_data` SET `src_id` = '3' WHERE `src_id` = '814176';
 UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '5' WHERE `src_id` = '814241';
+ALTER TABLE `sensor_map` AUTO_INCREMENT = 1;
+
