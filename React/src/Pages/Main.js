@@ -5,6 +5,8 @@ import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
+
 const pointerIcon = new L.Icon({
     iconUrl: require('../amihan.png'),
     iconRetinaUrl: require('../amihan.png'),
@@ -16,7 +18,7 @@ export default function Main() {
     let [ locations, setLocations ] = useState(null);
     let [ selected, setSelected ] = useState(null);
     useEffect(() => { 
-        fetch('https://api.amihan.xyz/list').then(res => res.json()).then(list => {
+        fetch(`${server}/query/list`).then(res => res.json()).then(list => {
             setDeviceList(list.sensors.map(x => {
                 return {
                     key: x.src_id,
@@ -61,7 +63,7 @@ export default function Main() {
                                         } else return {};
                                     }}
                                     onSubmit={(values, {setSubmitting}) => {
-                                        window.location.href=`https://api.amihan.xyz/query/data?src_id=${values.src_id}&date_start=${values.date_start}&date_end=${values.date_end}&format=${values.format}`;
+                                        window.location.href=`${server}/query/data?src_id=${values.src_id}&date_start=${values.date_start}&date_end=${values.date_end}&format=${values.format}`;
                                         setSubmitting(false);
                                     }}
                                 >

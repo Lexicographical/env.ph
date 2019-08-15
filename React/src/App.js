@@ -8,6 +8,8 @@ import Error404 from './Pages/Error404';
 import Header from './Components/Header';
 import Footer from './Components/Footer';
 
+const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
+
 function PrivateRoute({component: Component, ...rest}) {
     return (
         <Route
@@ -37,7 +39,7 @@ function App() {
     let [loggedIn, setLoggedIn] = React.useState(window.localStorage.userToken !== undefined);
     React.useEffect(() => {
         if (loggedIn) {
-            fetch("http://amihan.local/auth/verify", {
+            fetch(`${server}/auth/verify`, {
                 method: 'GET',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.localStorage.userToken}` }
             }).then(res => res.json()).then(setUser);
