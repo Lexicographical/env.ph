@@ -27,7 +27,8 @@ export default function Main() {
                 }
             }));
             setLocations(list.sensors.map(x => {
-                return (
+                if (x.latitude === null || x.longitude === null) return null;
+                else return (
                     <Marker key={x.src_id} position={[x.latitude, x.longitude]} icon={pointerIcon}>
                         <Popup onOpen={()=>setSelected(x.src_id)} onClose={()=>setSelected(null)}>
                             {x.location_name}
