@@ -64,6 +64,7 @@ function Dashboard({ user }) {
                                         if (res.status === 204) {
                                             setLoading({message: `Device successfully added.`, positive: true, negative: false, info: false});
                                             setModalOpen(false);
+                                            actions.setSubmitting(false);
                                         }
                                         else {
                                             let m = res.json();
@@ -81,6 +82,7 @@ function Dashboard({ user }) {
                                             </Button>
                                         }
                                         open={modalOpen}
+                                        onClose={() => setModalOpen(false)}
                                         closeOnDimmerClick={!isSubmitting}
                                         closeOnEscape={!isSubmitting}
                                         centered={false}
