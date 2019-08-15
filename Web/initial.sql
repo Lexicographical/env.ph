@@ -64,4 +64,6 @@ UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '4' WHERE `src_id` = '814180';
 UPDATE `sensor_data` SET `src_id` = '5' WHERE `src_id` = '814241';
 ALTER TABLE `sensor_map` AUTO_INCREMENT = 1;
+/* 3:16:00 PM Localhost amihan */ ALTER TABLE `sensor_map` CHANGE `location_name` `location_name` TEXT  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL;
+
 

@@ -4,6 +4,13 @@ import { Formik } from 'formik';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Highcharts from 'highcharts';
+import HighChartsData from "highcharts/modules/data";
+import HighChartsNoData from "highcharts/modules/no-data-to-display";
+import HighchartsReact from 'highcharts-react-official';
+
+HighChartsData(Highcharts);
+HighChartsNoData(Highcharts);
 
 const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
 
@@ -121,49 +128,147 @@ export default function Main() {
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="PM 1.0 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+1.0+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'PM 1.0 (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/pm1?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'PM 1.0'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="PM 2.5 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+2.5+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'PM 2.5 (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/pm25?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'PM 2.5'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="PM 10 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/3?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=PM+10+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'PM 10 (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/pm10?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'PM 10'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="Humidity (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/4?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=Humidity+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'Humidity (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/humidity?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'Humidity'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="Temperature (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/5?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=Temperature+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'Temperature (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/temperature?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'Temperature'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="MQ - 135 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/6?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=MQ+-+135+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'MQ-135 (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/voc?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'MQ-135'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
                             <Grid.Column widescreen={4} computer={8} tablet={8} mobile={16}>
                                 <center>
                                     <Card style={styles.embedCard}>
-                                        <iframe title="MQ - 7 (24 Hours Result)" style={styles.embedIframe} src={`https://thingspeak.com/channels/${selected}/charts/7?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=144&timescale=10&title=MQ-7+%2824hrs+Result%29&type=line`} />
+                                        <HighchartsReact
+                                            highcharts={Highcharts}
+                                            options={{
+                                                title: {
+                                                    text: 'MQ-7 (24 Hours Result)'
+                                                },
+                                                credits: {enabled: false},
+                                                data: {
+                                                    rowsURL: `${server}/query/sensor/carbonMonoxide?src_id=${selected}`,
+                                                    enablePolling: false,
+                                                    firstRowAsNames: false,
+                                                },
+                                                series: [{name: 'MQ-7'}]
+                                            }}
+                                        />
                                     </Card>
                                 </center>
                             </Grid.Column>
