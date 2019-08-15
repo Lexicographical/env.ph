@@ -24,6 +24,13 @@ $app->group('/query', function() {
     $this->get("/data/zip", "QueryController:zip");
     $this->get("/data_app", "QueryController:app");
     $this->get("/sensor", "QueryController:sensor");
+    $this->get("/sensor/pm1", "QueryController:pm1Data");
+    $this->get("/sensor/pm25", "QueryController:pm25Data");
+    $this->get("/sensor/pm10", "QueryController:pm10Data");
+    $this->get("/sensor/humidity", "QueryController:humidityData");
+    $this->get("/sensor/temperature", "QueryController:temperatureData");
+    $this->get("/sensor/voc", "QueryController:vocData");
+    $this->get("/sensor/carbonMonoxide", "QueryController:carbonMonoxideData");
     $this->get("/list", "QueryController:list");
 });
 

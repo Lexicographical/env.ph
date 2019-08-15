@@ -344,4 +344,263 @@ class QueryController extends BaseController {
         }
         return $response->withJson($out);
     }
+    public function pm1Data($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['pm1']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function pm25Data($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['pm2_5']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function pm10Data($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['pm10']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function humidityData($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['humidity']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function temperatureData($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['temperature']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function vocData($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['voc']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
+    public function carbonMonoxideData($req, $response) {
+        if (!isset($req->getQueryParams()['src_id'])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
+        } else {
+            $src_id = $req->getQueryParams()['src_id'];
+            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $stmt = $this->mysqli->prepare($sql);
+            if (!$stmt) {
+                error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => "An error occured"]);
+            }
+            $stmt->bind_param("i", $src_id);
+            $res = $stmt->execute();
+            if (!$res) {
+                error("Error querying database: ".$stmt->error, array("src" => "QueryController::sensor", "breakpoint" => "2"));
+                return $response->withStatus(500)->withJson(['error' => true, 'message' => 'Error querying database.']);
+            } else {
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
+                if ($row == null) return $response->withStatus(404)->withJson(['error' => true, 'message' => 'No entry found for sensor '.$src_id]);
+                else {
+                    $sql2 = "SELECT * FROM sensor_data WHERE src_id=? ORDER BY rec_id DESC LIMIT 100;";
+                    $stmt2 = $this->mysqli->prepare($sql2);
+                    $stmt2->bind_param("i", $src_id);
+                    $res2 = $stmt2->execute();
+                    $result2 = $stmt2->get_result();
+                    date_default_timezone_set('UTC');
+                    $arr = [];
+                    while ($row2 = $result2->fetch_assoc()) {
+                        $arr[] = [$row2['entry_time'], $row2['carbon_monoxide']];
+                    }
+                    return $response->withJson(array_reverse($arr));
+                }
+            }
+            $stmt->close();
+        }
+    }
 }
