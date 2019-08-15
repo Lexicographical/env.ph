@@ -36,6 +36,7 @@ $app->group('/query', function() {
 
 $app->group('/user', function() {
     $this->get('/sensors', "QueryController:userSensors");
+    $this->get('/sensor/{id}', "QueryController:userSensor");
     $this->post('/create/sensor', "SensorController:create");
 })->add(new App\Middleware\JWTMiddleware($container));
 

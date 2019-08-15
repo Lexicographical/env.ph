@@ -255,7 +255,7 @@ class QueryController extends BaseController {
             return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
         } else {
             $src_id = $req->getQueryParams()['src_id'];
-            $sql = "SELECT * FROM sensor_map WHERE src_id=?";
+            $sql = "SELECT location_name, latitude, longitude, creation_time FROM sensor_map WHERE src_id=?";
             $stmt = $this->mysqli->prepare($sql);
             if (!$stmt) {
                 error($this->mysqli->error, array("src" => "QueryController::sensor", "breakpoint" => "1"));
@@ -343,6 +343,52 @@ class QueryController extends BaseController {
             $out[] = $tmp;
         }
         return $response->withJson($out);
+    }
+    public function userSensor ($req, $response, $args) {
+        $tmp = [];
+        $e = $req->getAttribute('user');
+        $stmt = $this->mysqli->prepare("SELECT * FROM sensor_map WHERE user_id = (SELECT id FROM users WHERE email=?) AND src_id = ?;");
+        $stmt->bind_param("si", $e, $args['id']);
+        $res = $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_array();
+        if (empty($row)) return $response->withStatus(403)->withJson(['error'=>true,'message'=>'Unauthorized']);
+        else {
+            date_default_timezone_set('UTC');
+            $tmp["location_name"] = $row["location_name"];
+            $tmp["latitude"] = $row["latitude"];
+            $tmp["longitude"] = $row["longitude"];
+            $tmp["creation_time"] = (new \DateTime($row["creation_time"]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
+            $tmp["api_key"] = $row["api_key"];
+            $stmt2 = $this->mysqli->prepare("SELECT entry_time FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC LIMIT 1;");
+            $stmt2->bind_param("s", $row['src_id']);
+            $res2 = $stmt2->execute();
+            $result2 = $stmt2->get_result();
+            $row2 = $result2->fetch_array();
+            if (!empty($row2[0])) {
+                $tmp["last_contact"] = (new \DateTime($row2[0]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
+                $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
+                if ($diff->d > 0) {
+                    $d = $diff->d;
+                    if ($d !== 1) $tmp["status"] = "Offline for $d days.";
+                    else $tmp["status"] = "Offline for $d day.";
+                    $tmp['status_color'] = "red";
+                } else if ($diff->h > 0) {
+                    $h = $diff->h;
+                    if ($h !== 1) $tmp["status"] = "Offline for $h hours.";
+                    else $tmp["status"] = "Offline for $h hour.";
+                    $tmp['status_color'] = "orange";
+                } else {
+                    $tmp["status"] = "Active";
+                    $tmp['status_color'] = "green";
+                }
+            } else {
+                $tmp["last_contact"] = "Never";
+                $tmp["status"] = "No Data";
+                $tmp['status_color'] = "black";
+            }
+            return $response->withStatus(200)->withJson($tmp);
+        }
     }
     public function pm1Data($req, $response) {
         if (!isset($req->getQueryParams()['src_id'])) {
