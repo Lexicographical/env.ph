@@ -42,6 +42,10 @@ $app->group('/user', function() {
     $this->post('/create/sensor', "SensorController:create");
 })->add(new App\Middleware\JWTMiddleware($container));
 
+$app->group('/admin', function() {
+    $this->get('/users', "AdminController:getAllUsers");
+})->add(new App\Middleware\AdminMiddleware($container))->add(new App\Middleware\JWTMiddleware($container));
+
 $app->group("/update", function() {
     $this->get("/", "UpdateController:update");
 });

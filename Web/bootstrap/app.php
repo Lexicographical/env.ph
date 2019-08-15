@@ -14,6 +14,10 @@ $container['QueryController'] = function ($c) {
     return new App\Controllers\QueryController($c);
 };
 
+$container['AdminController'] = function ($c) {
+    return new App\Controllers\AdminController($c);
+};
+
 $container['AuthController'] = function ($c) {
     return new App\Controllers\AuthController($c);
 };
