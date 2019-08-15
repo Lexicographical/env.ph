@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Icon, Label, Table } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
+const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
+
 export default function Dashboard({ user }) {
     let [ devices, setDevices ] = useState();
     useEffect(() => {
-        fetch("http://amihan.local/user/sensors", {
+        fetch(`${server}/user/sensors`, {
                 method: 'GET',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.localStorage.userToken}` }
             }).then(res => res.json())

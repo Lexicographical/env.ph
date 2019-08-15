@@ -3,6 +3,8 @@ import { Button, Divider, Form, Grid, Message, Segment } from 'semantic-ui-react
 import { Link, withRouter } from 'react-router-dom';
 import { Formik } from 'formik';
 
+const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJECT_SERVER : "";
+
 function Login({ history, onUserLogin }) {
     let [loading, setLoading] = useState(false);
     let [loadingIndicator, setLoadingIndicator] = useState(false);
@@ -29,7 +31,7 @@ function Login({ history, onUserLogin }) {
                                 onSubmit={(values, actions) => {
                                     setLoadingIndicator(true);
                                     setLoading({message: `Logging in to ${values.email}'s account.`, positive: false, negative: false, info: true});
-                                    fetch(`http://amihan.local/auth/login`, {
+                                    fetch(`${server}/auth/login`, {
                                         method: 'POST',
                                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                                         body: JSON.stringify(values)
@@ -88,7 +90,7 @@ function Login({ history, onUserLogin }) {
                                 onSubmit={(values, actions) => {
                                     setLoadingIndicator(true);
                                     setLoading({message: `Logging in to ${values.email}'s account.`, positive: false, negative: false, info: true});
-                                    fetch(`http://amihan.local/auth/register`, {
+                                    fetch(`${server}/auth/register`, {
                                         method: 'POST',
                                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                                         body: JSON.stringify(values)
