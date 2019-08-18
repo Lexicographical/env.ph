@@ -44,6 +44,9 @@ $app->group('/user', function() {
 
 $app->group('/admin', function() {
     $this->get('/users', "AdminController:getAllUsers");
+    $this->get('/sensors', "AdminController:getAllSensors");
+    $this->get('/promote/{id}', "AdminController:promoteUser");
+    $this->get('/demote/{id}', "AdminController:demoteUser");
 })->add(new App\Middleware\AdminMiddleware($container))->add(new App\Middleware\JWTMiddleware($container));
 
 $app->group("/update", function() {
