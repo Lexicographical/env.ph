@@ -347,8 +347,18 @@ class QueryController extends BaseController {
     public function userSensor ($req, $response, $args) {
         $tmp = [];
         $e = $req->getAttribute('user');
-        $stmt = $this->mysqli->prepare("SELECT * FROM sensor_map WHERE user_id = (SELECT id FROM users WHERE email=?) AND src_id = ?;");
-        $stmt->bind_param("si", $e, $args['id']);
+        $stmt = $this->mysqli->prepare("SELECT type FROM users WHERE email=?;");
+        $stmt->bind_param("s", $e);
+        $res = $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_array();
+        if ($row[0] === 'admin') {
+            $stmt = $this->mysqli->prepare("SELECT * FROM sensor_map WHERE src_id = ?;");
+            $stmt->bind_param("i", $args['id']);
+        } else {
+            $stmt = $this->mysqli->prepare("SELECT * FROM sensor_map WHERE user_id = (SELECT id FROM users WHERE email=?) AND src_id = ?;");
+            $stmt->bind_param("si", $e, $args['id']);
+        }
         $res = $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_array();
