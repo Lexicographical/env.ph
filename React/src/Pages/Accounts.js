@@ -6,6 +6,7 @@ const server = process.env.REACT_APP_PROJECT_SERVER ? process.env.REACT_APP_PROJ
 
 function Accounts({ history }) {
     let [ accounts, setAccounts ] = useState();
+    let [ change, setChange ] = useState(false);
     useEffect(() => {
         fetch(`${server}/admin/users`, {
             method: 'GET',
@@ -22,16 +23,30 @@ function Accounts({ history }) {
                     <Table.Cell>
                         {window.localStorage.userEmail !== user.email && (
                             user.type !== "admin" ? (
-                                <Button color="blue">Promote {user.name} to Administrator</Button>
+                                <Button color="blue"
+                                    onClick={() => {
+                                        fetch(`${server}/admin/promote/${user.id}`, {
+                                            method: 'GET',
+                                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.localStorage.userToken}` }
+                                        }).then(setChange);
+                                    }}
+                                >Promote {user.name} to Administrator</Button>
                             ) : (
-                                <Button color="red">Remove Administrator Privileges for {user.name}</Button>
+                                <Button color="red"
+                                    onClick={() => {
+                                        fetch(`${server}/admin/demote/${user.id}`, {
+                                            method: 'GET',
+                                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.localStorage.userToken}` }
+                                        }).then(setChange);
+                                    }}
+                                >Remove Administrator Privileges for {user.name}</Button>
                             )
                         )}
                     </Table.Cell>
                 </Table.Row>
             );
         })).then(setAccounts);
-    }, [ history ]);
+    }, [ history, change ]);
     return (
         <React.Fragment>
             <Grid>
