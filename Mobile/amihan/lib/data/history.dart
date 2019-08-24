@@ -30,6 +30,7 @@ import 'package:amihan/data/air.dart';
 import 'dart:math';
 import 'package:amihan/data/locations.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 int location_id = 814176;
 
@@ -58,17 +59,22 @@ Future<Locations> getLocationJsonData() async {
 Future<DataFeed> getJsonData(int src_id) async {
   var response = await http.get(url + src_id.toString());
 
+  print("GETTING: " + src_id.toString());
+
   if (response.statusCode == 200) {
     // If the call to the server was successful, parse the JSON
     var data = json.decode(response.body);
 
     DataFeed dataFeed = new DataFeed.fromJson(data);
+    return dataFeed;
+
   } else {
     // If that call was not successful, throw an error.
     throw Exception('Failed to load post');
   }
 
-  return dataFeed;
+
+  
 }
 
 class HistoryPageState extends State<HistoryPage> {
@@ -109,27 +115,21 @@ class HistoryPageState extends State<HistoryPage> {
             selectedDay = true;
             selectedMonth = false;
             selectedWeek = false;
-          } else {
-            selectedDay = false;
-          }
+          } 
           break;
         case 1:
           if (!selectedMonth) {
             selectedMonth = true;
             selectedDay = false;
             selectedWeek = false;
-          } else {
-            selectedMonth = false;
-          }
+          } 
           break;
         case 2:
           if (!selectedWeek) {
             selectedWeek = true;
             selectedMonth = false;
             selectedDay = false;
-          } else {
-            selectedWeek = false;
-          }
+          } 
           break;
       }
     });
@@ -137,6 +137,8 @@ class HistoryPageState extends State<HistoryPage> {
 
   String selectedData = 'Temp'; // Option 2
   List<double> dataFactors;
+  List<DateTime> time;
+  List<String> timeLabels;
 
   bool selectedDay = false;
   bool selectedWeek = false;
@@ -150,7 +152,6 @@ class HistoryPageState extends State<HistoryPage> {
   List<String> locations;
 
   bool typing = false;
-  bool empty = false;
   TextEditingController td = TextEditingController();
 
   List<String> items = [];
@@ -159,6 +160,8 @@ class HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+
+
     SystemChrome.setEnabledSystemUIOverlays([]);
 
     final width = MediaQuery.of(context).size.width;
@@ -272,13 +275,14 @@ class HistoryPageState extends State<HistoryPage> {
                                                     return ListTile(
                                                       onTap: () {
                                                         td.text = items[index];
-                                                        location_id = snapshot
+                                                       
+                                                        setState(() {
+                                                          typing = false;
+                                                            location_id = snapshot
                                                             .data
                                                             .sensors[index]
                                                             .src_id;
 
-                                                        setState(() {
-                                                          typing = false;
                                                         });
 
                                                         FocusScope.of(context)
@@ -318,44 +322,50 @@ class HistoryPageState extends State<HistoryPage> {
                       child: FutureBuilder(
                         future: getJsonData(location_id),
                         builder: (context, snapshot) {
+
+
                           if (snapshot.data != null) {
 
                             if (selectedDay) {
-                              length = snapshot.data.day.length;
                               data = snapshot.data.day;
                             } else if (selectedWeek) {
-                              length = snapshot.data.week.length;
                               data = snapshot.data.week;
                             } else if (selectedMonth) {
-                              length = snapshot.data.month.length;
                               data = snapshot.data.month;
                             }
 
                             data.removeWhere((value) => value == null);
 
-                            if (length < 1) {
-                              empty = true;
-                            }
-
+                            length = data.length;
                             dataFactors = List(length);
+                            time = List(length);
 
                             switch (idx) {
                               case 0:
                                 for (int i = 0; i < length; i++) {
                                   dataFactors[i] =
                                       double.parse(data[i].temp.toString());
+                                      // time[i] = data[i].createdAt;
+
+                                      time[i] = DateTime.parse(data[i].createdAt);
+
                                 }
                                 break;
                               case 1:
                                 for (int i = 0; i < length; i++) {
                                   dataFactors[i] =
                                       double.parse(data[i].humidity.toString());
+                                  
+                                  time[i] = DateTime.parse(data[i].createdAt);
+                                      
                                 }
                                 break;
                               case 2:
                                 for (int i = 0; i < length; i++) {
                                   dataFactors[i] = double.parse(
                                       data[i].carbonMonoxide.toString());
+
+                                      time[i] = DateTime.parse(data[i].createdAt);
                                 }
                                 break;
                                 break;
@@ -364,21 +374,40 @@ class HistoryPageState extends State<HistoryPage> {
                                   dataFactors[i] =
                                       double.parse(data[i].pM_1.toString());
                                   print(dataFactors[i]);
+
+                                  time[i] = DateTime.parse(data[i].createdAt);
                                 }
                                 break;
                               case 4:
                                 for (int i = 0; i < length; i++) {
                                   dataFactors[i] =
                                       double.parse(data[i].pM_2_5.toString());
+
+                                      time[i] = DateTime.parse(data[i].createdAt);
                                 }
                                 break;
                               case 5:
                                 for (int i = 0; i < length; i++) {
                                   dataFactors[i] =
                                       double.parse(data[i].pM_10.toString());
+                                      time[i] = DateTime.parse(data[i].createdAt);
                                 }
                                 break;
                             }
+
+
+                             for (int i = 0; i < length; i++) {
+                                  
+
+
+                            if(selectedMonth || selectedWeek) {
+                                      timeLabels[i] = (DateFormat('MMMMd').format(time[i]));
+                              } else {
+                                      timeLabels[i] = (DateFormat('jm').format(time[i]));
+                              }   
+                                }
+
+                            print(time);
 
                             var minimum = (dataFactors.reduce(min)).toInt();
                             var maximum = (dataFactors.reduce(max)).toInt();
@@ -459,8 +488,8 @@ class HistoryPageState extends State<HistoryPage> {
                                                 gradient: LinearGradient(
                                                   colors: selectedDay
                                                       ? <Color>[
-                                                          colorBtn,
-                                                          colorBtnSelected,
+                                                    colorBtn,
+                                                    Color(0xff8ed5fa),
                                                         ]
                                                       : <Color>[
                                                           Color(0xfffff),
@@ -469,62 +498,18 @@ class HistoryPageState extends State<HistoryPage> {
                                                 ),
                                               )),
                                           onPressed: () {
-                                            toggleData(0);
+                                            setState(() {
+                                              toggleData(0);
+                                            });
+                                            
+                                  
                                           },
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(30.0),
                                           ),
                                         )),
-                                    Container(
-                                        margin:
-                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                        width: 90,
-                                        height: 45,
-                                        child: RaisedButton(
-                                          color: Colors.white,
-                                          padding: const EdgeInsets.all(0.0),
-                                          child: Container(
-                                              width: 150,
-                                              height: 45,
-                                              child: Center(
-                                                  child: Text('Month',
-                                                      style: selectedMonth
-                                                          ? TextStyle(
-                                                              fontSize: 15,
-                                                              fontFamily:
-                                                                  'Avenir',
-                                                              color:
-                                                                  Colors.white)
-                                                          : TextStyle(
-                                                              fontSize: 15,
-                                                              fontFamily:
-                                                                  'Avenir',
-                                                              color: Colors
-                                                                  .black))),
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(20)),
-                                                gradient: LinearGradient(
-                                                  colors: selectedMonth
-                                                      ? <Color>[
-                                                          colorBtn,
-                                                          colorBtnSelected,
-                                                        ]
-                                                      : <Color>[
-                                                          Color(0xfffff),
-                                                          Color(0xffFFF),
-                                                        ],
-                                                ),
-                                              )),
-                                          onPressed: () {
-                                            toggleData(1);
-                                          },
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30.0),
-                                          ),
-                                        )),
+
                                     Container(
                                         margin:
                                             EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -558,7 +543,7 @@ class HistoryPageState extends State<HistoryPage> {
                                                   colors: selectedWeek
                                                       ? <Color>[
                                                           colorBtn,
-                                                          colorBtnSelected,
+                                                    Color(0xff8ed5fa),
                                                         ]
                                                       : <Color>[
                                                           Color(0xfffff),
@@ -567,14 +552,74 @@ class HistoryPageState extends State<HistoryPage> {
                                                 ),
                                               )),
                                           onPressed: () {
-                                            toggleData(2);
+                                              setState(() {
+                                              toggleData(2);
+                                            });
+                                            
                                           },
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(30.0),
                                           ),
                                         )),
+                                    Container(
+                                        margin:
+                                        EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                        width: 90,
+                                        height: 45,
+                                        child: RaisedButton(
+                                          color: Colors.white,
+                                          padding: const EdgeInsets.all(0.0),
+                                          child: Container(
+                                              width: 150,
+                                              height: 45,
+                                              child: Center(
+                                                  child: Text('Month',
+                                                      style: selectedMonth
+                                                          ? TextStyle(
+                                                          fontSize: 15,
+                                                          fontFamily:
+                                                          'Avenir',
+                                                          color:
+                                                          Colors.white)
+                                                          : TextStyle(
+                                                          fontSize: 15,
+                                                          fontFamily:
+                                                          'Avenir',
+                                                          color: Colors
+                                                              .black))),
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20)),
+                                                gradient: LinearGradient(
+                                                  colors: selectedMonth
+                                                      ? <Color>[
+                                                    colorBtn,
+                                                    Color(0xff8ed5fa),
+                                                  ]
+                                                      : <Color>[
+                                                    Color(0xfffff),
+                                                    Color(0xffFFF),
+                                                  ],
+                                                ),
+                                              )),
+                                          onPressed: () {
+                                              setState(() {
+                                              toggleData(1);
+                                            });
+                                            
+                                          },
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(30.0),
+                                          ),
+                                        )),
+
+
                                   ])),
+
+
+
                               Positioned(
                                   top: width - 100,
                                   left: height / 50,
@@ -610,6 +655,25 @@ class HistoryPageState extends State<HistoryPage> {
                                       Text(minimum.toString()),
                                     ])
                                   ])),
+
+                              Positioned(
+                                  top: width + 100,
+                                  left: (height + 100) / 50 + 80,
+                                   
+                                  child: Row(children: [
+
+                                    Text(time[0]),
+                                    Padding(padding: EdgeInsets.fromLTRB((width - 300) / 3, 0, 0, 0)),
+                                    Text(time[length ~/= 2]),
+                                     Padding(padding: EdgeInsets.fromLTRB((width - 315) / 3, 0, 0, 0)),
+                                     Text(time[time.length - 1])
+                                  ], 
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  
+                      
+                                  
+                                  )),
+
                               Positioned(
                                   top: width - 100,
                                   left: width - 325,
@@ -628,8 +692,8 @@ class HistoryPageState extends State<HistoryPage> {
                                               begin: Alignment.topRight,
                                               end: Alignment.bottomLeft,
                                               colors: [
-                                                Color(0xff05DCB6),
-                                                Color(0xff0AF5F0)
+                                                colorBtn,
+                                                Color(0xff8ed5fa),
                                               ],
                                             ),
                                           ))))
