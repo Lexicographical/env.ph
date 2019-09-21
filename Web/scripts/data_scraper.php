@@ -2,7 +2,7 @@
 require_once __DIR__."/../vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::create(__DIR__.'/../');
 if (file_exists(__DIR__.'/../.env')) $dotenv->load();
-$mysqli = new mysqli($_ENV['MYSQL_DBHOST'], $_ENV['MYSQL_USERNAME'], $_ENV['MYSQL_PASSWORD'], $_ENV['MYSQL_DB']);
+$mysqli = new mysqli($_ENV['MYSQL_DBHOST'], $_ENV['MYSQL_USERNAME'], $_ENV['MYSQL_PASSWORD'], "amihan");
 $guzzle = new \GuzzleHttp\Client();
 
 use Monolog\Logger;
@@ -37,7 +37,7 @@ foreach ($ids as &$src_id) {
         $last_update = formatDate($channel->updated_at);
         $last_entry_id = $channel->last_entry_id;
         $feed = $jobj->feeds;
-        $getLastEntryIdStmt = $mysqli->prepare("SELECT entry_id FROM sensor_data WHERE src_id=? ORDER BY entry_time DESC LIMIT 1;");
+        $getLastEntryIdStmt = $mysqli->prepare("SELECT entry_id FROM sensor_data WHERE src_id=(SELECT src_id FROM sensor_map WHERE thingspeak=?) ORDER BY entry_time DESC LIMIT 1;");
         if (!$getLastEntryIdStmt) echo "$src_id: ERROR 12201: $err";
         $getLastEntryIdStmt->bind_param("i", $src_id);
         $res = $getLastEntryIdStmt->execute();
@@ -53,7 +53,7 @@ foreach ($ids as &$src_id) {
             // Action Code: 1 
             $sql = "INSERT INTO sensor_map
             (src_id, location_name, latitude, longitude, creation_time, last_update)
-            VALUES (?, ?, ?, ?, ?, ?)";
+            VALUES ((SELECT src_id FROM sensor_map WHERE thingspeak=?), ?, ?, ?, ?, ?)";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param("isddss", $src_id, $location_name, $latitude, $longitude, $creation_date, $last_update);
             $res = $stmt->execute();
@@ -65,7 +65,7 @@ foreach ($ids as &$src_id) {
             // Action Code: 2
             $sql_data = "INSERT INTO sensor_data
             (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            VALUES ((SELECT src_id FROM sensor_map WHERE thingspeak=?), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt_data = $mysqli->prepare($sql_data);
 
             if (!$stmt_data) echo "$src_id: ERROR 11002: $mysqli->error";
