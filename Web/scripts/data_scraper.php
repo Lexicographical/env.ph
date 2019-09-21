@@ -52,8 +52,8 @@ foreach ($ids as &$src_id) {
             // New sensor. Register
             // Action Code: 1 
             $sql = "INSERT INTO sensor_map
-            (src_id, location_name, latitude, longitude, creation_time, last_update)
-            VALUES ((SELECT src_id FROM sensor_map WHERE thingspeak=?), ?, ?, ?, ?, ?)";
+            (thingspeak, location_name, latitude, longitude, creation_time, last_update)
+            VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param("isddss", $src_id, $location_name, $latitude, $longitude, $creation_date, $last_update);
             $res = $stmt->execute();
