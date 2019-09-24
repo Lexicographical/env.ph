@@ -2,3 +2,4 @@ vendor/*
 .env
 scripts/update.log
 logs/*
+reference/*
