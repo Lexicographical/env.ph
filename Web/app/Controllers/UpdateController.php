@@ -3,23 +3,22 @@
 namespace App\Controllers;
 
 class UpdateController extends BaseController {
-    private function verifyApiKey($src_id, $api_key) {
-        $sql = "SELECT api_key FROM sensor_map WHERE src_id=?";
+    private function verifyApiKey($api_key) {
+        $sql = "SELECT src_id FROM sensor_map WHERE api_key=?";
         $stmt = $this->mysqli->prepare($sql);
-        $stmt->bind_param("i", $src_id);
+        $stmt->bind_param("s", $api_key);
         $res = $stmt->execute();
 
         if (!$res) {
-            error("Error querying database to get API key", array("src" => "UpdateController::verifyApiKey", "src_id" => $src_id));
+            error("Error querying database to get API key", array("src" => "UpdateController::verifyApiKey", "src_id" => $api_key));
             return false;
         } else {
             $row = $stmt->get_result()->fetch_assoc();
             if ($row == null) {
-                error("Error no sensor found with src_id " . $src_id, array("src" => "UpdateController:verifyApiKey", "src_id" => $src_id));
+                error("Error no sensor found with api_key " . $api_key, array("src" => "UpdateController:verifyApiKey", "api_key" => $api_key));
                 return false;
             } else {
-                $db_api_key = $row["api_key"];
-                return $api_key === $db_api_key;
+                return $row['src_id'];
             }
         }
     }
@@ -51,8 +50,8 @@ class UpdateController extends BaseController {
     }
 
     public function update($req, $response) {
-        if (!isset($req->getQueryParams()["src_id"],
-            $req->getQueryParams()["api_key"],
+        // TODO: remove src_id
+        if (!isset($req->getQueryParams()["api_key"],
             $req->getQueryParams()["pm1"],
             $req->getQueryParams()["pm2_5"],
             $req->getQueryParams()["pm10"],
@@ -60,15 +59,11 @@ class UpdateController extends BaseController {
             $req->getQueryParams()["temperature"],
             $req->getQueryParams()["voc"],
             $req->getQueryParams()["carbon_monoxide"]
-        )) {
-            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing parameters']);
-        } else {
-            $src_id = $req->getQueryParams()["src_id"];
+        )) return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing parameters']);
+        else {
             $api_key = $req->getQueryParams()["api_key"];
-
-            if (!$this->verifyApiKey($src_id, $api_key)) {
-                return $response->withStatus(400)->withJson(['error' => true, 'message' => 'API Key is invalid!']);
-            }
+            $src_id = $this->verifyApiKey($api_key);
+            if (!$src_id) return $response->withStatus(400)->withJson(['error' => true, 'message' => 'API Key is invalid!']);
 
             $sql_data = "INSERT INTO sensor_data
             (src_id, entry_id, entry_time, pm1, pm2_5, pm10, humidity, temperature, voc, carbon_monoxide)
