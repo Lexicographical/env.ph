@@ -23,6 +23,7 @@ filters.
 
 
 Output:
+
 | Value       | Type        | Description |
 | ----------- | ----------- | ----------- |
 | src_id      | integer     | Positive integer representing the assigned index of the sensor.|
@@ -37,11 +38,13 @@ Output:
 This queries the sensor at the specific sensor ID given.
 
 Parameters:
+
 | Parameter   | Type        | Description |
 | ----------- | ----------- | ----------- |
 | **src_id**  | integer     | Positive integer representing the assigned index of the sensor.|
 
 Output (JSON):
+
 ```json
 {
     "location_name": "1010 Rizal Ave, Metro Manila",
@@ -77,6 +80,7 @@ Replace ```{data_type}``` with the appropriate type from the following list:
 | Carbon Monoxide | ```carbonMonoxide``` |
 
 Parameters:
+
 | Parameter   | Type        | Description |
 | ----------- | ----------- | ----------- |
 | **src_id**  | integer     | Positive integer representing the assigned index of the sensor.|

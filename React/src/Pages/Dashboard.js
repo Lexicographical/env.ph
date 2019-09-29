@@ -97,7 +97,7 @@ function Dashboard({ user }) {
                                                 <Form>
                                                     <Form.Field>
                                                         <label>Location of Device</label>
-                                                        <Form.Input onChange={handleChange} error={errors.name} value={values.name} placeholder="1 Roxas Bvld. Manila, Philippines" type="text" name="name" required />
+                                                        <Form.Input onChange={handleChange} error={errors.name} value={values.name} placeholder="1 Roxas Blvd, Manila, Philippines" type="text" name="name" required />
                                                     </Form.Field>
                                                     <Button color="green" type="submit" disabled={isSubmitting || Object.keys(errors).length > 0} loading={isSubmitting} onClick={handleSubmit} fluid>Add Device</Button>
                                                 </Form>
