@@ -400,6 +400,7 @@ class QueryController extends BaseController {
             return $response->withStatus(200)->withJson($tmp);
         }
     }
+    // TODO: merge all these into one function
     public function pm1Data($req, $response) {
         if (!isset($req->getQueryParams()['src_id'])) {
             return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing src_id']);
