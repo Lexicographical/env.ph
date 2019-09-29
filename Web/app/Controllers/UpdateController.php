@@ -50,7 +50,6 @@ class UpdateController extends BaseController {
     }
 
     public function update($req, $response) {
-        // TODO: remove src_id
         if (!isset($req->getQueryParams()["api_key"],
             $req->getQueryParams()["pm1"],
             $req->getQueryParams()["pm2_5"],
