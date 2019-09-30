@@ -50,7 +50,7 @@ export default function Main() {
             <Grid>
                 <Grid.Row>
                     <Grid.Column computer={12} tablet={16} mobile={16} >
-                        <Map center={[16.0287167,121.665402]} zoom={7} style={{height: '40vh', width: '100%'}}>
+                        <Map center={[16.0287167,121.665402]} zoom={7} style={{height: '60vh', width: '100%'}}>
                             <TileLayer
                                 url="https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png"
                                 attribution='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'

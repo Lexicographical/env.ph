@@ -6,7 +6,7 @@ function Header({ history, user, onUserLogout }) {
     return (
         <React.Fragment>
             <Menu secondary style={{ paddingBottom: '2rem' }}>
-            <Link to="/"><img src="/logo.png" alt="Project Amihan" style={{ maxWidth: '576px', maxHeight: '128px' }} /></Link>
+            <Link to="/"><img src="/logo.png" alt="Project Amihan" style={{ maxWidth: '576px', maxHeight: '64px' }} /></Link>
                 <Menu.Menu position='right'>
                     {window.localStorage.userToken ? (
                         <React.Fragment>
