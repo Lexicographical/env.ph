@@ -1,7 +1,7 @@
 <?php
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 $format = "%datetime% > %level_name% > %message% %context% %extra%\n";
 $formatter = new LineFormatter($format);
@@ -16,17 +16,20 @@ $info_stream = new StreamHandler("logs/info.log", Logger::INFO);
 $info_stream->setFormatter($formatter);
 $info_log->pushHandler($info_stream);
 
-function info($msg, $params) {
+function info($msg, $params)
+{
     global $info_log;
     $info_log->info($msg, $params);
 }
 
-function error($msg, $params) {
+function error($msg, $params)
+{
     global $error_log;
     $error_log->error($msg, $params);
 }
 
-function arrayToCSV($array, $header, &$out, $delimeter=',') {
+function arrayToCSV($array, $header, &$out, $delimeter = ',')
+{
     $length = sizeof($array);
     $str = "";
     if ($length > 0) {
@@ -34,13 +37,19 @@ function arrayToCSV($array, $header, &$out, $delimeter=',') {
         if ($width == sizeof($header)) {
             for ($i = 0; $i < $width; $i++) {
                 $str .= $header[$i];
-                if ($width-1 !== $i) $str .= $delimeter;
+                if ($width - 1 !== $i) {
+                    $str .= $delimeter;
+                }
+
             }
             for ($i = 0; $i < $length; $i++) {
                 $str .= "\r\n";
                 for ($j = 0; $j < $width; $j++) {
                     $str .= $array[$i][$j];
-                    if ($width-1 !== $j) $str .= $delimeter;
+                    if ($width - 1 !== $j) {
+                        $str .= $delimeter;
+                    }
+
                 }
             }
         } else {
@@ -52,13 +61,18 @@ function arrayToCSV($array, $header, &$out, $delimeter=',') {
     return $str;
 }
 
-function startsWith($str, $prefix) {
+function startsWith($str, $prefix)
+{
     $len = strlen($prefix);
     return (strlen($str) >= $len) && (substr($str, 0, $len) === $prefix);
 }
 
-function isLocalIP($ip) {
-    if ($ip === "::1" || $ip === "127.0.0.1") return true;
+function isLocalIP($ip)
+{
+    if ($ip === "::1" || $ip === "127.0.0.1") {
+        return true;
+    }
+
     $prefixes = array("192.168.", "10.");
     foreach ($prefixes as $prefix) {
         if (startsWith($ip, $prefix)) {
@@ -75,11 +89,17 @@ function isLocalIP($ip) {
     return false;
 }
 
-function getConnectionInfo($apiKey, $mysqli) {
+function getConnectionInfo($apiKey, $mysqli)
+{
     global $info_log;
-    if(!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
-    else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    else $ip = $_SERVER['REMOTE_ADDR'];
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+
     $s1 = $mysqli->prepare("SELECT * FROM ip_map WHERE ip=? LIMIT 1");
     $s1->bind_param("s", $ip);
     $s1->execute();
@@ -91,22 +111,22 @@ function getConnectionInfo($apiKey, $mysqli) {
                 "ip" => $ip,
                 "city" => "local",
                 "country" => "local",
-                "isp" => "local"
+                "isp" => "local",
             );
         }
-    
-        $url = "https://api.ipgeolocation.io/ipgeo?apiKey=".$apiKey."&ip=".$ip;
+
+        $url = "https://api.ipgeolocation.io/ipgeo?apiKey=" . $apiKey . "&ip=" . $ip;
         $guzzle = new \GuzzleHttp\Client();
         $res = $guzzle->request('GET', $url);
         $info = json_decode($res->getBody());
-    
+
         if (isset($info->message)) {
             info("Unknown ip", array("ip" => $ip, "message" => $info->message));
             return array(
                 "ip" => $ip,
                 "city" => "unknown",
                 "country" => "unknown",
-                "isp" => "unknown"
+                "isp" => "unknown",
             );
         }
         $stmt = $mysqli->prepare("INSERT INTO ip_map (ip, city, country, isp) VALUES (?, ?, ?, ?)");
@@ -116,7 +136,10 @@ function getConnectionInfo($apiKey, $mysqli) {
             "ip" => $ip,
             "city" => $info->city,
             "country" => $info->country_name,
-            "isp" => $info->isp
+            "isp" => $info->isp,
         );
-    } else return $row;
+    } else {
+        return $row;
+    }
+
 }
