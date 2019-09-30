@@ -1,12 +1,15 @@
 <?php
-require_once __DIR__."/../vendor/autoload.php";
-$dotenv = Dotenv\Dotenv::create(__DIR__.'/../');
-if (file_exists(__DIR__.'/../.env')) $dotenv->load();
+require_once __DIR__ . "/../vendor/autoload.php";
+$dotenv = Dotenv\Dotenv::create(__DIR__ . '/../');
+if (file_exists(__DIR__ . '/../.env')) {
+    $dotenv->load();
+}
+
 $config = [
-	'settings' => [
+    'settings' => [
         'determineRouteBeforeAppMiddleware' => true,
-        'displayErrorDetails' => isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production"
-	]
+        'displayErrorDetails' => isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production",
+    ],
 ];
 $container = new \Slim\Container($config);
 
@@ -22,11 +25,11 @@ $container['AuthController'] = function ($c) {
     return new App\Controllers\AuthController($c);
 };
 
-$container["SensorController"] = function($c) {
+$container["SensorController"] = function ($c) {
     return new App\Controllers\SensorController($c);
 };
 
-$container["UpdateController"] = function($c) {
+$container["UpdateController"] = function ($c) {
     return new App\Controllers\UpdateController($c);
 };
 
@@ -50,8 +53,12 @@ $container['notFoundHandler'] = function ($container) {
 
 $container['errorHandler'] = function ($container) {
     return function ($req, $res, $e) use ($container) {
-        if (isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production") return $res->write($e);
-        else return $res->withJson(['error' => true, 'code' => null, 'message' => 'Internal Server Error']);
+        if (isset($_ENV['ENVIRONMENT']) && $_ENV['ENVIRONMENT'] !== "production") {
+            return $res->write($e);
+        } else {
+            return $res->withJson(['error' => true, 'code' => null, 'message' => 'Internal Server Error']);
+        }
+
     };
 };
 
@@ -64,9 +71,9 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 $app->add(function ($req, $res, $next) {
     $response = $next($req, $res);
     return $response
-            ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
 require_once "routes.php";

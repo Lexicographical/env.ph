@@ -2,9 +2,11 @@
 
 namespace App\Controllers;
 
-class AdminController extends BaseController  {
-    public function getAllUsers($req, $response) {
-        $out=[];
+class AdminController extends BaseController
+{
+    public function getAllUsers($req, $response)
+    {
+        $out = [];
         $sql = "SELECT id, name, email, type, created_at FROM users;";
         $stmt = $this->mysqli->prepare($sql);
         $res = $stmt->execute();
@@ -19,7 +21,8 @@ class AdminController extends BaseController  {
             return $response->withJson($out);
         }
     }
-    public function getAllSensors ($req, $response) {
+    public function getAllSensors($req, $response)
+    {
         $out = [];
         $e = $req->getAttribute('user');
         $stmt = $this->mysqli->prepare("SELECT src_id, location_name FROM sensor_map;");
@@ -38,13 +41,21 @@ class AdminController extends BaseController  {
                 $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
                 if ($diff->d > 0) {
                     $d = $diff->d;
-                    if ($d !== 1) $tmp["status"] = "Offline for $d days.";
-                    else $tmp["status"] = "Offline for $d day.";
+                    if ($d !== 1) {
+                        $tmp["status"] = "Offline for $d days.";
+                    } else {
+                        $tmp["status"] = "Offline for $d day.";
+                    }
+
                     $tmp['status_color'] = "red";
                 } else if ($diff->h > 0) {
                     $h = $diff->h;
-                    if ($h !== 1) $tmp["status"] = "Offline for $h hours.";
-                    else $tmp["status"] = "Offline for $h hour.";
+                    if ($h !== 1) {
+                        $tmp["status"] = "Offline for $h hours.";
+                    } else {
+                        $tmp["status"] = "Offline for $h hour.";
+                    }
+
                     $tmp['status_color'] = "orange";
                 } else {
                     $tmp["status"] = "Active";
@@ -61,7 +72,8 @@ class AdminController extends BaseController  {
         }
         return $response->withJson($out);
     }
-    public function promoteUser ($req, $response, $args) {
+    public function promoteUser($req, $response, $args)
+    {
         $tmp = [];
         $e = $req->getAttribute('user');
         $stmt = $this->mysqli->prepare("UPDATE users SET type='admin' WHERE id=?;");
@@ -69,7 +81,8 @@ class AdminController extends BaseController  {
         $res = $stmt->execute();
         return $response->withStatus(204);
     }
-    public function demoteUser ($req, $response, $args) {
+    public function demoteUser($req, $response, $args)
+    {
         $tmp = [];
         $e = $req->getAttribute('user');
         $stmt = $this->mysqli->prepare("UPDATE users SET type='user' WHERE id=?;");
