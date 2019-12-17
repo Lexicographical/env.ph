@@ -483,7 +483,7 @@ class QueryController extends BaseController
                         date_default_timezone_set('UTC');
                         $arr = [];
                         while ($row2 = $result2->fetch_assoc()) {
-                            $arr[] = [$row2['entry_time'], $row2[$type]];
+                            $arr[] = [(new \DateTime($row2['entry_time']))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('Y-m-d H:i:s'), $row2[$type]];
                         }
                         return $response->withJson(array_reverse($arr));
                     }
