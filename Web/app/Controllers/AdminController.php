@@ -39,12 +39,12 @@ class AdminController extends BaseController
             if (!empty($row2[0])) {
                 $tmp["last_contact"] = (new \DateTime($row2[0]))->setTimezone(new \DateTimeZone('Asia/Manila'))->format('F d, Y - H:i:s A');
                 $diff = ((new \DateTime($row2[0]))->diff(new \DateTime()));
-                if ($diff->d > 0) {
-                    $d = $diff->d;
+                if ($diff->days > 0) {
+                    $d = $diff->days;
                     if ($d !== 1) {
-                        $tmp["status"] = "Offline for $d days.";
+                        $tmp["status"] = "Offline for $days days.";
                     } else {
-                        $tmp["status"] = "Offline for $d day.";
+                        $tmp["status"] = "Offline for $days day.";
                     }
 
                     $tmp['status_color'] = "red";
