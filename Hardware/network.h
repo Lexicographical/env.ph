@@ -18,14 +18,14 @@ struct Network {
         Serial.println("Connecting to server");
         BearSSL::WiFiClientSecure client;
         client.setFingerprint(fingerprint);
-        if (!client.connect(host, 443)) {
+        if (!client.connect(HOST, 443)) {
             Serial.println("Connection failed!");
             return;
         }
         Serial.println("Connected to server!");
 
         String url = "/update/?api_key=";
-        url += api_key;
+        url += API_KEY;
         url += "&pm1=";
         url += pm1;
         url += "&pm2_5=";
@@ -41,7 +41,7 @@ struct Network {
         url += "&carbon_monoxide=";
         url += carbon_monoxide;
 
-        client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host +
+        client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + HOST +
                      "\r\n" + "Connection: close\r\n\r\n");
 
         Serial.println("Server Response:");
