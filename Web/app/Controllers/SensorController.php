@@ -20,6 +20,81 @@ class SensorController extends BaseController
         } else {
             return $response->withStatus(401)->withJson(['error' => true, 'message' => 'No User Found']);
         }
+    }
 
+    public function renameSensor($req, $response) {
+        $params = $req->getQueryParams();
+        if (!isset($params["src_id"],
+                   $params["api_key"],
+                   $params["location_name"])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing parameters']);
+        } else {
+            $src_id = $params["src_id"];
+            $api_key = $params["api_key"];
+            
+            if (!authenticateAPIRequest($api_key, $src_id)) {
+                return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Invalid API Key']);
+            } else {
+                $location_name = $params["location_name"];
+                $sql = "UPDATE sensor_map SET location_name = ? WHERE src_id = ?";
+                $stmt = $this->mysqli->prepare($sql);
+                $stmt->bind_param("si", $location_name, $src_id);
+                $res = $stmt->execute();
+
+                if (!$res) {
+                    error("Error renaming sensor: " . $stmt->error, array("src" => "SensorController:renameSensor"));
+                    return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Error renaming sensor.']);
+                }
+                $stmt_data->close();
+                return $response->withStatus(200);
+            }
+        }
+    }
+
+    public function deleteSensor($req, $response) {
+        $params = $req->getQueryParams();
+        if (!isset($params["src_id"],
+                   $params["api_key"])) {
+            return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Missing parameters']);
+        } else {
+            $src_id = $params["src_id"];
+            $api_key = $params["api_key"];
+            
+            if (!authenticateAPIRequest($api_key, $src_id)) {
+                return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Invalid API Key']);
+            } else {
+                $sql = "DELETE FROM sensor_map WHERE src_id=?";
+                $stmt = $this->mysqli->prepare($sql);
+                $stmt->bind_param("i", $src_id);
+                $res = $stmt->execute();
+
+                if (!$res) {
+                    error("Error deleting sensor: " . $stmt->error, array("src" => "SensorController:deleteSensor"));
+                    return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Error deleting sensor.']);
+                }
+                $stmt_data->close();
+                return $response->withStatus(200);
+            }
+        }
+    }
+
+    private function authenticateAPIRequest($api_key, $src_id) {
+        $sql = "SELECT src_id FROM sensor_map WHERE api_key=?";
+        $stmt = $this->mysqli->prepare($sql);
+        $stmt->bind_param("s", $api_key);
+        $res = $stmt->execute();
+
+        if (!$res) {
+            error("Error querying database to get API key", array("src" => "UpdateController:verifyApiKey", "src_id" => $api_key));
+            return false;
+        } else {
+            $row = $stmt->get_result()->fetch_assoc();
+            if ($row == null) {
+                error("Error no sensor found with api_key " . $api_key, array("src" => "UpdateController:verifyApiKey", "api_key" => $api_key));
+                return false;
+            } else {
+                return $row['src_id'] == $src_id;
+            }
+        }
     }
 }

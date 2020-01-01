@@ -21,7 +21,7 @@ class UpdateController extends BaseController
             $api_key = $req->getQueryParams()["api_key"];
             $src_id = $this->verifyApiKey($api_key);
             if (!$src_id) {
-                return $response->withStatus(400)->withJson(['error' => true, 'message' => 'API Key is invalid!']);
+                return $response->withStatus(400)->withJson(['error' => true, 'message' => 'Invalid API Key']);
             }
 
             $sql_data = "INSERT INTO sensor_data

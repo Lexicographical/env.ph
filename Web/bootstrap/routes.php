@@ -40,6 +40,8 @@ $app->group('/user', function () {
     $this->get('/sensors', "QueryController:getUserSensors");
     $this->get('/sensor/{id}', "QueryController:getUserSensor");
     $this->post('/create/sensor', "SensorController:createSensors");
+    $this->post('/rename/sensor', "SensorController:renameSensor");
+    $this->post('/delete/sensor', "SensorController:deleteSensor");
 })->add(new App\Middleware\JWTMiddleware($container));
 
 $app->group('/admin', function () {
